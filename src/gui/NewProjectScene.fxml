@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<fx:root maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" scaleShape="false" type="BorderPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <center>
+      <VBox>
+         <children>
+            <GridPane hgap="10.0" vgap="10.0" BorderPane.alignment="CENTER">
+              <columnConstraints>
+                <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" maxWidth="270.0" minWidth="10.0" prefWidth="231.0" />
+                <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" maxWidth="319.0" minWidth="10.0" prefWidth="319.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints fillHeight="false" maxHeight="102.0" minHeight="2.0" prefHeight="35.0" vgrow="NEVER" />
+                <RowConstraints fillHeight="false" maxHeight="211.0" minHeight="10.0" vgrow="NEVER" />
+                <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+                  <RowConstraints minHeight="10.0" vgrow="ALWAYS" />
+              </rowConstraints>
+               <BorderPane.margin>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </BorderPane.margin>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+               <children>
+                  <Label text="Name" />
+                  <TextField fx:id="txfName" GridPane.columnIndex="1" />
+                  <Label text="Palette type" GridPane.rowIndex="1" />
+                  <Label text="OBJ Character VRAM Mapping" GridPane.rowIndex="2" />
+                  <Label alignment="TOP_RIGHT" text="Display" GridPane.rowIndex="3" GridPane.valignment="TOP" />
+                  <HBox alignment="CENTER" fillHeight="false" prefWidth="200.0" spacing="10.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                     <children>
+                        <RadioButton fx:id="rdbtnPalette16" mnemonicParsing="false" selected="true" text="Palette 16">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="palette" />
+                           </toggleGroup>
+                        </RadioButton>
+                        <RadioButton fx:id="rdbtnPalette256" disable="true" mnemonicParsing="false" text="Palette 256" toggleGroup="$palette" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER" prefWidth="200.0" spacing="10.0" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER">
+                     <children>
+                        <RadioButton fx:id="rdbtnOneDimensional" mnemonicParsing="false" selected="true" text="One Dimensional">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="objmap" />
+                           </toggleGroup>
+                        </RadioButton>
+                        <RadioButton fx:id="rdbtnTwoDimensional" disable="true" mnemonicParsing="false" text="Two Dimensional" toggleGroup="$objmap" />
+                     </children>
+                  </HBox>
+                  <VBox prefWidth="100.0" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.valignment="TOP">
+                     <children>
+                        <CheckBox fx:id="rdbtnDisplayOBJ" mnemonicParsing="false" selected="true" text="OBJ" />
+                        <HBox spacing="10.0">
+                           <children>
+                              <CheckBox fx:id="rdbtnDisplayBG0" mnemonicParsing="false" selected="true" text="BG0" />
+                              <CheckBox fx:id="rdbtnDisplayBG1" mnemonicParsing="false" selected="true" text="BG1" />
+                              <CheckBox fx:id="rdbtnDisplayBG2" mnemonicParsing="false" selected="true" text="BG2" />
+                              <CheckBox fx:id="rdbtnDisplayBG3" mnemonicParsing="false" selected="true" text="BG3" />
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </children>
+            </GridPane>
+            <Label fx:id="lblError" textFill="RED">
+               <VBox.margin>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </VBox.margin>
+            </Label>
+            <Region prefHeight="200.0" prefWidth="200.0" />
+            <HBox alignment="BOTTOM_RIGHT" fillHeight="false" prefWidth="200.0" spacing="10.0">
+               <children>
+                  <Button fx:id="btnCreate" mnemonicParsing="false" text="Create" />
+                  <Button fx:id="btnCancel" mnemonicParsing="false" text="Cancel" />
+               </children>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </HBox>
+         </children>
+      </VBox>
+   </center>
+</fx:root>
