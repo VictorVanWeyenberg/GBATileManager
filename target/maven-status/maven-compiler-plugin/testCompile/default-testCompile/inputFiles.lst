@@ -1,0 +1,9 @@
+/home/cnpuvache/Desktop/Java Playground/GBATileManager/src/test/java/dev/cnpuvache/gba/tile_manager/compiler/CCompilerTests.java
+/home/cnpuvache/Desktop/Java Playground/GBATileManager/src/test/java/dev/cnpuvache/gba/tile_manager/domain/BackgroundTests.java
+/home/cnpuvache/Desktop/Java Playground/GBATileManager/src/test/java/dev/cnpuvache/gba/tile_manager/domain/ScreenDataTests.java
+/home/cnpuvache/Desktop/Java Playground/GBATileManager/src/test/java/dev/cnpuvache/gba/tile_manager/domain/TileTests.java
+/home/cnpuvache/Desktop/Java Playground/GBATileManager/src/test/java/dev/cnpuvache/gba/tile_manager/domain/ProjectTests.java
+/home/cnpuvache/Desktop/Java Playground/GBATileManager/src/test/java/dev/cnpuvache/gba/tile_manager/domain/ScreenEntryTests.java
+/home/cnpuvache/Desktop/Java Playground/GBATileManager/src/test/java/dev/cnpuvache/gba/tile_manager/domain/Palette16Tests.java
+/home/cnpuvache/Desktop/Java Playground/GBATileManager/src/test/java/dev/cnpuvache/gba/tile_manager/domain/CharacterDataTests.java
+/home/cnpuvache/Desktop/Java Playground/GBATileManager/src/test/java/dev/cnpuvache/gba/tile_manager/domain/RGB15Tests.java

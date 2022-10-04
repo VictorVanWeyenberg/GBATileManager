@@ -1,0 +1,9 @@
+dev/cnpuvache/gba/tile_manager/domain/Palette16Tests.class
+dev/cnpuvache/gba/tile_manager/domain/CharacterDataTests.class
+dev/cnpuvache/gba/tile_manager/domain/RGB15Tests.class
+dev/cnpuvache/gba/tile_manager/domain/TileTests.class
+dev/cnpuvache/gba/tile_manager/domain/BackgroundTests.class
+dev/cnpuvache/gba/tile_manager/compiler/CCompilerTests.class
+dev/cnpuvache/gba/tile_manager/domain/ScreenDataTests.class
+dev/cnpuvache/gba/tile_manager/domain/ScreenEntryTests.class
+dev/cnpuvache/gba/tile_manager/domain/ProjectTests.class
