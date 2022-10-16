@@ -5,22 +5,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -86,6 +82,14 @@ public class CharacterData {
         if (o == null || getClass() != o.getClass()) return false;
         CharacterData that = (CharacterData) o;
         return colorsNotPalettes == that.colorsNotPalettes && tiles.equals(that.tiles);
+    }
+
+    public ByteBuffer toC() {
+        ByteBuffer buffer = ByteBuffer.allocate(tiles.size() * 32);
+        for (Tile tile : tiles) {
+            buffer.put(tile.toC().array());
+        }
+        return buffer;
     }
 
     public static final class Serializer extends StdSerializer<CharacterData> {

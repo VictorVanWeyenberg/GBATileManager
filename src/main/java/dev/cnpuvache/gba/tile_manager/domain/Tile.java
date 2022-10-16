@@ -12,16 +12,24 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.Iterator;
 
 public class Tile {
+    public static int INCREMENTER = 0;
     private final int[] tileData;
     private final boolean colorsNoPalettes;
+
+    private final int id;
 
     public Tile(boolean colorsNoPalettes) {
         this.colorsNoPalettes = colorsNoPalettes;
         this.tileData = new int[64];
+        this.id = ++INCREMENTER;
     }
 
     @JsonCreator
@@ -31,6 +39,11 @@ public class Tile {
         }
         this.colorsNoPalettes = colorsNoPalettes;
         this.tileData = tileData;
+        this.id = ++INCREMENTER;
+    }
+
+    public String getName() {
+        return String.format("TIL%03d", id);
     }
 
     public int getTileData(int x, int y) {
@@ -56,7 +69,7 @@ public class Tile {
         tileData[y * 8 + x] = color;
     }
 
-    public String toC() {
+    public String toCCode() {
         String[] halfRows = new String[this.tileData.length / 4];
         for (int index = 0; index < this.tileData.length / 4; index++) {
             StringBuilder halfRowBuilder = new StringBuilder("0x");
@@ -104,6 +117,17 @@ public class Tile {
         if (o == null || getClass() != o.getClass()) return false;
         Tile tile = (Tile) o;
         return colorsNoPalettes == tile.colorsNoPalettes && Arrays.equals(tileData, tile.tileData);
+    }
+
+    public ByteBuffer toC() {
+        ByteBuffer buffer = ByteBuffer.allocate(32).order(ByteOrder.LITTLE_ENDIAN);
+        for (int index = 0; index < this.tileData.length; index+=2) {
+            int rightDot = tileData[index + 1];
+            int leftDot = tileData[index];
+            byte dots = (byte) (leftDot | (rightDot << 4));
+            buffer.put(dots);
+        }
+        return buffer;
     }
 
     public static final class Serializer extends StdSerializer<Tile> {

@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
+import java.util.List;
 
 public class Background {
 
@@ -66,6 +67,10 @@ public class Background {
 
         this.characterData = characterData;
         this.screenData = screenData;
+    }
+
+    public List<Tile> getTiles() {
+        return characterData.getTiles();
     }
 
     @Override

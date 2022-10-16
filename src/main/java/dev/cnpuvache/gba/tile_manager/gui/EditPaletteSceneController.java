@@ -53,7 +53,7 @@ public class EditPaletteSceneController extends BorderPane {
     
     private GraphicsContext cvsPaletteGCtx, cvsColorGCtx;
     private Palette16 palette;
-    private static final int colorWidth = 40;
+    private static int colorWidth = 40;
     private int selectedPalette = 0, selectedIndex = 0;
     private final Color GRAYSTROKE = new Color(0.5, 0.5, 0.5, 1),
             AQUASTROKE = new Color(0, 1, 1, 1);
@@ -67,6 +67,9 @@ public class EditPaletteSceneController extends BorderPane {
         loader.setRoot(this);
         loader.setController(this);
         loader.load();
+
+        this.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        colorWidth = (int) (getWidth() / 4);
     }
 
     public void setPalette(Palette palette) {
@@ -112,6 +115,7 @@ public class EditPaletteSceneController extends BorderPane {
         if (this.cvsPaletteGCtx == null) {
             this.cvsPaletteGCtx = this.cvsPalette.getGraphicsContext2D();
         }
+        colorWidth = (int) (cvsPalette.getWidth() / 4);
         for (RGB15 color : ((Palette16) this.palette).getPalette(palette)) {
             this.cvsPaletteGCtx.setFill(color.getColor());
             this.cvsPaletteGCtx.setStroke(GRAYSTROKE);
@@ -142,6 +146,7 @@ public class EditPaletteSceneController extends BorderPane {
         if (this.cvsPaletteGCtx == null) {
             this.cvsPaletteGCtx = this.cvsPalette.getGraphicsContext2D();
         }
+        colorWidth = (int) (cvsPalette.getWidth() / 4);
         this.cvsPaletteGCtx.setStroke(AQUASTROKE);
         this.cvsPaletteGCtx.strokeRect((index % 4) * colorWidth, Math.floor(index / 4) * colorWidth, colorWidth, colorWidth);
         lblColor.setText(color.toString());

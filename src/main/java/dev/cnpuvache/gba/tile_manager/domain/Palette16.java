@@ -18,11 +18,12 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
-import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 /**
  *
@@ -61,16 +62,16 @@ public class Palette16 extends Palette {
     }
 
     @Override
-    public String toC() {
-        StringBuilder sb = new StringBuilder();
-        this.paletteData.forEach(palette -> palette.forEach(color -> {
-            sb.append(color.toC());
-            if (paletteData.indexOf(palette) < PALETTE_SIZE - 1 || palette.indexOf(color) < PALETTE_SIZE - 1) {
-                sb.append(", ");
+    public ByteBuffer toC() {
+        ByteBuffer buffer = ByteBuffer.allocate(PALETTE_SIZE * PALETTE_SIZE * 2);
+        for (int y = 0; y < paletteData.size(); y++) {
+            List<RGB15> palette = paletteData.get(y);
+            for (int x = 0; x < palette.size(); x++) {
+                RGB15 color = palette.get(x);
+                buffer.put(color.toC().array());
             }
-        }));
-        String paletteString = String.format("{ %s }", sb.toString());
-        return paletteString;
+        }
+        return buffer;
     }
 
     @Override
@@ -91,6 +92,7 @@ public class Palette16 extends Palette {
         public void serialize(Palette16 palette16, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
             jsonGenerator.writeStartObject();
             jsonGenerator.writeStringField("name", palette16.name);
+            jsonGenerator.writeBooleanField("default", palette16.isDefault());
             jsonGenerator.writeFieldName("paletteData");
             jsonGenerator.writeStartArray();
             for (List<RGB15> data : palette16.paletteData) {
@@ -116,6 +118,9 @@ public class Palette16 extends Palette {
             JsonNode node = jsonParser.getCodec().readTree(jsonParser);
             String name = node.get("name").asText();
             Palette16 palette16 = new Palette16(name);
+            JsonNode isDefaultNode = node.get("default");
+            boolean isDefault = isDefaultNode != null && isDefaultNode.asBoolean();
+            palette16.setDefault(isDefault);
             Iterator<JsonNode> paletteDataNode = node.get("paletteData").elements();
             ObjectMapper mapper = new ObjectMapper();
             int paletteIndex = 0;

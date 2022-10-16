@@ -19,11 +19,6 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -31,7 +26,7 @@ import java.util.*;
  * @author Reznov
  */
 public class Project {
-    
+
     public enum OBJMapping {
         ONE_DIMENSIONAL,
         TWO_DIMENSIONAL
@@ -58,18 +53,7 @@ public class Project {
 
     private final List<Background> backgrounds;
 
-    public Project(
-            String name,
-            OBJMapping objMapping,
-            PaletteType paletteType, List<Background> backgroundList) throws URISyntaxException, IOException {
-        this(name, objMapping, paletteType, true,
-                backgroundList.get(0) != null,
-                backgroundList.get(1) != null,
-                backgroundList.get(2) != null,
-                backgroundList.get(3) != null
-                );
-
-    }
+    private final CharacterData objectCharacterData;
 
     @JsonCreator
     public Project(
@@ -79,6 +63,7 @@ public class Project {
             @JsonProperty("backgrounds") List<Background> backgrounds,
             @JsonProperty("objectPalettes") Map<String, Palette> objectPalettes,
             @JsonProperty("backgroundPalettes") Map<String, Palette> backgroundPalettes,
+            @JsonProperty("objectCharacterData") CharacterData objectCharacterData,
             @JsonProperty("displayOBJ") boolean displayOBJ,
             @JsonProperty("displayBG0") boolean displayBG0,
             @JsonProperty("displayBG1") boolean displayBG1,
@@ -90,6 +75,10 @@ public class Project {
         this.backgrounds = backgrounds;
         this.objectPalettes = objectPalettes;
         this.backgroundPalettes = backgroundPalettes;
+        if (objectCharacterData == null) {
+            objectCharacterData = new CharacterData(paletteType == PaletteType.PALETTE256);
+        }
+        this.objectCharacterData = objectCharacterData;
         this.displayOBJ = displayOBJ;
         this.displayBG0 = displayBG0;
         this.displayBG1 = displayBG1;
@@ -150,10 +139,23 @@ public class Project {
             backgrounds.add(new Background.Builder(index, 0, colorNotPalettes, 16 + index * 2, 0)
                     .setCharacterData(characterData).build());
         }
+
+        this.objectCharacterData = new CharacterData(colorNotPalettes);
     }
     
     public String getName() {
         return name;
+    }
+
+    public void addObjectPalette(String paletteName, Palette16 palette16, boolean makeDefault) {
+        objectPalettes.put(paletteName, palette16);
+        if (makeDefault) {
+            setDefaultObjectPalette(paletteName);
+        }
+    }
+
+    public void deleteObjectPalette(String paletteName) {
+        objectPalettes.remove(paletteName);
     }
 
     public Map<String, Palette> getObjectPalettes() {
@@ -163,6 +165,17 @@ public class Project {
     public Palette getObjectPalette(String paletteName) {
         return objectPalettes.get(paletteName);
     }
+
+    public void addBackgroundPalette(String name, Palette palette, boolean makeDefault) {
+        backgroundPalettes.put(name, palette);
+        if (makeDefault) {
+            setDefaultBackgroundPalette(name);
+        }
+    }
+
+    public void deleteBackgroundPalette(String paletteName) {
+        backgroundPalettes.remove(paletteName);
+    }
     
     public Map<String, Palette> getBackgroundPalettes() {
         return backgroundPalettes;
@@ -170,6 +183,70 @@ public class Project {
     
     public Palette getBackgroundPalette(String paletteName) {
         return backgroundPalettes.get(paletteName);
+    }
+
+    public Palette getDefaultBackgroundPalette() {
+        return backgroundPalettes.values().stream()
+                .filter(Palette::isDefault)
+                .findFirst()
+                .orElse(null);
+    }
+
+    public boolean setDefaultBackgroundPalette(String paletteName) {
+        if (!backgroundPalettes.containsKey(paletteName)) return false;
+        backgroundPalettes.values().stream()
+                .forEach(p -> p.setDefault(false));
+        backgroundPalettes.get(paletteName).setDefault(true);
+        return true;
+    }
+
+    public boolean setDefaultObjectPalette(String paletteName) {
+        if (!objectPalettes.containsKey(paletteName)) return false;
+        backgroundPalettes.values().stream()
+                .forEach(p -> p.setDefault(false));
+        backgroundPalettes.get(paletteName).setDefault(true);
+        return true;
+    }
+
+    public void verifyBackgroundNumber(int backgroundNumber) {
+        if (backgroundNumber < 0 || backgroundNumber > 3) {
+            throw new IllegalArgumentException("Background number out of bounds [0:3].");
+        }
+        if (backgroundNumber == 0 && !displayBG0) {
+            throw new IllegalArgumentException("Background 0 is not displayed.");
+        }
+        if (backgroundNumber == 1 && !displayBG1) {
+            throw new IllegalArgumentException("Background 1 is not displayed.");
+        }
+        if (backgroundNumber == 2 && !displayBG2) {
+            throw new IllegalArgumentException("Background 2 is not displayed.");
+        }
+        if (backgroundNumber == 3 && !displayBG3) {
+            throw new IllegalArgumentException("Background 3 is not displayed.");
+        }
+    }
+
+    public List<Tile> getBackgroundTiles(int backgroundNumber) {
+        verifyBackgroundNumber(backgroundNumber);
+        return backgrounds.get(backgroundNumber).getTiles();
+    }
+
+    public Tile getBackgroundTile(int backgroundNumber, String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("Tile name is undefined.");
+        }
+        verifyBackgroundNumber(backgroundNumber);
+        Tile tile = backgrounds.get(backgroundNumber).getTiles().stream()
+                .filter(t -> name.equals(t.getName()))
+                .findFirst().orElse(null);
+        if (tile == null) {
+            throw new IllegalArgumentException(String.format("Could not find tile with name %s.", name));
+        }
+        return tile;
+    }
+
+    public List<Tile> getObjectTiles() {
+        return objectCharacterData.getTiles();
     }
     
     @Override
@@ -289,6 +366,8 @@ public class Project {
             }
             jsonGenerator.writeEndArray();
 
+            jsonGenerator.writeObjectField("objectCharacterData", project.objectCharacterData);
+
             jsonGenerator.writeFieldName("backgrounds");
             jsonGenerator.writeStartArray();
             for (Background background : project.backgrounds) {
@@ -334,6 +413,12 @@ public class Project {
                 backgroundPalettes.put(paletteName, palette16);
             }
 
+            CharacterData objectCharacterData = null;
+            JsonNode objectCharacterDataNode = node.get("objectCharacterData");
+            if (objectCharacterDataNode != null) {
+                objectCharacterData = mapper.treeToValue(objectCharacterDataNode, CharacterData.class);
+            }
+
             List<Background> backgrounds = new ArrayList<>();
             for (JsonNode backgroundNode : node.get("backgrounds")) {
                 Background background = mapper.treeToValue(backgroundNode, Background.class);
@@ -341,7 +426,7 @@ public class Project {
             }
 
             return new Project(name, objMapping, paletteType,
-                    backgrounds, objectPalettes, backgroundPalettes,
+                    backgrounds, objectPalettes, backgroundPalettes, objectCharacterData,
                     displayOBJ, displayBG0, displayBG1, displayBG2, displayBG3);
         }
     }

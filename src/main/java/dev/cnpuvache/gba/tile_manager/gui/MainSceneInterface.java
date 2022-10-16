@@ -7,6 +7,8 @@ package dev.cnpuvache.gba.tile_manager.gui;
 
 import dev.cnpuvache.gba.tile_manager.domain.Project;
 
+import java.util.Collection;
+
 /**
  *
  * @author Reznov
@@ -14,5 +16,12 @@ import dev.cnpuvache.gba.tile_manager.domain.Project;
 public interface MainSceneInterface {
     
     void setProject(Project project);
-    
+
+    void addBackgroundPalette(String paletteName, boolean makeDefault);
+
+    void addObjectPalette(String paletteName, boolean makeDefault);
+
+    Collection<String> getBackgroundPaletteNames();
+
+    Collection<String> getObjectPaletteNames();
 }

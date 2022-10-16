@@ -1,7 +1,6 @@
 package dev.cnpuvache.gba.tile_manager.domain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,13 +27,13 @@ public class TileTests {
     public void tileFromCToCDoesNotChange() {
         String c = "{ 0x0000, 0x0000, 0x3300, 0x0333, 0x0330, 0x0330, 0x0330, 0x0330, 0x3330, 0x0033, 0x0330, 0x0003, 0x0330, 0x0330, 0x0000, 0x0000 }";
         Tile tile = Tile.fromC(c, false);
-        String compiledC = tile.toC();
+        String compiledC = tile.toCCode();
         assertEquals(c, compiledC);
     }
 
     @Test
     public void tileToCFromCDoesNotChange() {
-        String compiledC = tile.toC();
+        String compiledC = tile.toCCode();
         Tile parsedTile = Tile.fromC(compiledC, false);
         assertEquals(tile, parsedTile);
     }

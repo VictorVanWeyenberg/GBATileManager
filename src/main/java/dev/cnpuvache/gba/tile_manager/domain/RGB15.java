@@ -8,6 +8,9 @@ package dev.cnpuvache.gba.tile_manager.domain;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Arrays;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -109,10 +112,10 @@ public class RGB15 {
         setColor();
     }
 
-    public String toC() {
-        int color = (b << 10) + (g << 5) + r;
-        String hexString = String.format("0x%04x", color);
-        return hexString;
+    public ByteBuffer toC() {
+        short color = (short) ((b << 10) + (g << 5) + r);
+        ByteBuffer buffer = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN).putShort(color);
+        return buffer;
     }
 
     @Override

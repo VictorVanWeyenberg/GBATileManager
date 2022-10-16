@@ -5,7 +5,7 @@
  */
 package dev.cnpuvache.gba.tile_manager.domain;
 
-import java.io.Serializable;
+import java.nio.ByteBuffer;
 
 /**
  *
@@ -13,6 +13,7 @@ import java.io.Serializable;
  */
 public abstract class Palette {
     protected String name;
+    private boolean isDefault = false;
     
     // RGB15
     protected Palette(String name) {
@@ -21,7 +22,15 @@ public abstract class Palette {
         }
         this.name = name.toLowerCase();
     }
+
+    public boolean isDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(boolean isDefault) {
+        this.isDefault = isDefault;
+    }
     
-    public abstract String toC();
+    public abstract ByteBuffer toC();
     
 }

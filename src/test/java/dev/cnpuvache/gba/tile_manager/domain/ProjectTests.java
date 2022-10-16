@@ -75,7 +75,7 @@ public class ProjectTests {
 
         project = new Project(
                 "TEST", Project.OBJMapping.ONE_DIMENSIONAL, Project.PaletteType.PALETTE16,
-                backgrounds, objectPalettes, backgroundPalettes,
+                backgrounds, objectPalettes, backgroundPalettes, characterData,
                 true, true, true, false, false);
     }
 
