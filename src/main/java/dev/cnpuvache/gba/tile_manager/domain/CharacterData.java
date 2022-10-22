@@ -14,9 +14,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,6 +88,62 @@ public class CharacterData {
             buffer.put(tile.toC().array());
         }
         return buffer;
+    }
+
+    public boolean removeTile(String tileName) {
+        Tile tile = tiles.stream()
+                .filter(Objects::nonNull)
+                .filter(t -> Objects.nonNull(t.getName()))
+                .filter(t -> t.getName().equals(tileName))
+                .findFirst()
+                .orElse(null);
+        if (tile == null) return false;
+        return tiles.remove(tile);
+    }
+
+    public void renameTile(String oldName, String newName) {
+        Tile tile = tiles.stream()
+                .filter(t -> t.getName().equals(oldName))
+                .findFirst().orElse(null);
+        if (tile == null) return;
+        tile.setName(newName);
+    }
+
+    public void moveTileUp(String tileName) {
+        Tile tile = tiles.stream()
+                .filter(Objects::nonNull)
+                .filter(t -> Objects.nonNull(t.getName()))
+                .filter(t -> t.getName().equals(tileName))
+                .findFirst()
+                .orElse(null);
+        if (tile == null) {
+            System.out.printf("Tile with name %s not found in character data.", tileName);
+            return;
+        }
+        System.out.println(tile);
+        int index = tiles.indexOf(tile);
+        if (index == 0) {
+            System.out.println("Tile has index 0 so can't be moved up.");
+            return;
+        }
+        System.out.println("Swapping...");
+        Collections.swap(tiles, index, index - 1);
+    }
+
+    public void moveTileDown(String tileName) {
+        Tile tile = tiles.stream()
+                .filter(Objects::nonNull)
+                .filter(t -> Objects.nonNull(t.getName()))
+                .filter(t -> t.getName().equals(tileName))
+                .findFirst()
+                .orElse(null);
+        if (tile == null) {
+            System.out.printf("Tile with name %s not found in character data.", tileName);
+            return;
+        }
+        int index = tiles.indexOf(tile);
+        if (index + 1 == tiles.size()) return;
+        Collections.swap(tiles, index, index + 1);
     }
 
     public static final class Serializer extends StdSerializer<CharacterData> {

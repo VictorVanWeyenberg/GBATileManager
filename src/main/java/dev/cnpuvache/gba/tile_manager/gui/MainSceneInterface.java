@@ -24,4 +24,16 @@ public interface MainSceneInterface {
     Collection<String> getBackgroundPaletteNames();
 
     Collection<String> getObjectPaletteNames();
+
+    Collection<String> getBackgroundTileNames(int backgroundNumber);
+
+    void addBackgroundTile(String tileName, int backgroundNumber);
+
+    Collection<String> getObjectTileNames();
+
+    void addObjectTile(String tileName);
+
+    void renameBackgroundTile(String oldName, String newName, int backgroundNumber);
+
+    void renameObjectTile(String oldName, String newName);
 }

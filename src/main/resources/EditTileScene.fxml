@@ -27,7 +27,7 @@
                         <Insets bottom="10.0" />
                      </padding>
                   </Label>
-                  <Slider fx:id="sldrPalette" blockIncrement="1.0" majorTickUnit="4.0" max="15.0" minorTickCount="1" showTickMarks="true" snapToTicks="true" />
+                  <Slider fx:id="sldrPalette" blockIncrement="1.0" majorTickUnit="1.0" max="15.0" minorTickCount="1" showTickMarks="true" snapToTicks="true" />
                </children>
             </VBox>
             <Separator orientation="VERTICAL" prefHeight="200.0" />

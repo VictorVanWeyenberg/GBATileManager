@@ -15,7 +15,7 @@ public class TileTests {
 
     @BeforeEach
     public void setup() {
-        tile = new Tile(false);
+        tile = new Tile(false, "Tile001");
         for (int i = 0; i < 8; i++) {
             tile.setTileData(i, 0, 1);
             tile.setTileData(i, i, 1);

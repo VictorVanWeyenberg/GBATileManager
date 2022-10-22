@@ -37,7 +37,7 @@ public class EditTileSceneController extends TitledPane {
     private final Color GRAYSTROKE = new Color(0.5, 0.5, 0.5, 1),
             AQUASTROKE = new Color(0, 1, 1, 1);
     private int selectedTilePixel;
-    private int selectedColor;
+    private int selectedColor = 0;
 
     public EditTileSceneController(Project project) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/EditTileScene.fxml"));
@@ -89,17 +89,15 @@ public class EditTileSceneController extends TitledPane {
     }
 
     public void setPaletteNumber(int paletteNumber) {
-        if (this.backgroundNotObject) {
-            Palette16 palette16 = getPalette16();
-            if (palette16 == null) return;
-            if (palette16.getPalette(paletteNumber) == null) return;
-            this.paletteNumber = paletteNumber;
-            showPalette();
-        }
+        Palette16 palette16 = getPalette16();
+        if (palette16 == null) return;
+        if (palette16.getPalette(paletteNumber) == null) return;
+        this.paletteNumber = paletteNumber;
+        showPalette();
+        showTile();
     }
 
     private void showPalette() {
-        System.out.println("Showing palette...");
         Palette16 palette16 = getPalette16();
         if (palette16 == null) {
             return;
@@ -131,6 +129,7 @@ public class EditTileSceneController extends TitledPane {
             return;
         }
         int pixelWidth = (int) (cvsTile.getWidth() / 8);
+        // System.out.println(tile);
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
                 int pixel = tile.getTileData(x, y);
@@ -149,7 +148,6 @@ public class EditTileSceneController extends TitledPane {
         int y = (int) Math.floor(event.getY() / pixelWidth);
         int x = (int) Math.floor(event.getX() / pixelWidth);
         this.selectedColor = y * 4 + x;
-        System.out.println(selectedColor);
         showPalette();
     }
 
@@ -158,8 +156,8 @@ public class EditTileSceneController extends TitledPane {
         int pixelWidth = (int) (cvsTile.getWidth() / 8);
         int y = (int) Math.floor(event.getY() / pixelWidth);
         int x = (int) Math.floor(event.getX() / pixelWidth);
-        this.selectedTilePixel = y * 8 + x;
-        System.out.println(selectedTilePixel);
+        if (this.tile == null) return;
+        this.tile.setTileData(x, y, selectedColor);
         showTile();
     }
 }

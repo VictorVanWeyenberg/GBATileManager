@@ -27,8 +27,8 @@ public class Test {
         }
 
         CharacterData characterData = new CharacterData(false);
-        characterData.addTile(new Tile(false));
-        Tile tile = new Tile(false);
+        characterData.addTile(new Tile(false, "BG_TILE"));
+        Tile tile = new Tile(false, "Ooohhh pretty");
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
                 tile.setTileData(x, y, x + y);

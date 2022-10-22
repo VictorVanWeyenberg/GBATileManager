@@ -18,6 +18,7 @@ import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Objects;
 
 public class Tile {
     public static int INCREMENTER = 0;
@@ -25,25 +26,43 @@ public class Tile {
     private final boolean colorsNoPalettes;
 
     private final int id;
+    private String name;
 
-    public Tile(boolean colorsNoPalettes) {
+    /**
+     * MUST STAY PRIVATE.
+     * @param colorsNoPalettes
+     */
+    private Tile(boolean colorsNoPalettes) {
         this.colorsNoPalettes = colorsNoPalettes;
         this.tileData = new int[64];
         this.id = ++INCREMENTER;
+        this.name = null;
+    }
+
+    public Tile(boolean colorsNoPalettes, String name) {
+        this.colorsNoPalettes = colorsNoPalettes;
+        this.tileData = new int[64];
+        this.id = ++INCREMENTER;
+        this.name = name;
     }
 
     @JsonCreator
-    public Tile(@JsonProperty("colorsNotPalettes") boolean colorsNoPalettes,  @JsonProperty("tileData") int[] tileData) {
+    public Tile(@JsonProperty("colorsNotPalettes") boolean colorsNoPalettes, @JsonProperty("name") String name, @JsonProperty("tileData") int[] tileData) {
         if (tileData.length != 64) {
             throw new IllegalArgumentException("Tile data length must be 64.");
         }
         this.colorsNoPalettes = colorsNoPalettes;
         this.tileData = tileData;
+        this.name = name;
         this.id = ++INCREMENTER;
     }
 
     public String getName() {
-        return String.format("TIL%03d", id);
+        if (this.name == null) {
+            return String.format("TIL%03d", id);
+        } else {
+            return this.name;
+        }
     }
 
     public int getTileData(int x, int y) {
@@ -116,7 +135,14 @@ public class Tile {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Tile tile = (Tile) o;
-        return colorsNoPalettes == tile.colorsNoPalettes && Arrays.equals(tileData, tile.tileData);
+        return colorsNoPalettes == tile.colorsNoPalettes && Arrays.equals(tileData, tile.tileData) && name.equals(tile.name);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(colorsNoPalettes, name);
+        result = 31 * result + Arrays.hashCode(tileData);
+        return result;
     }
 
     public ByteBuffer toC() {
@@ -130,6 +156,10 @@ public class Tile {
         return buffer;
     }
 
+    public void setName(String newName) {
+        this.name = newName;
+    }
+
     public static final class Serializer extends StdSerializer<Tile> {
 
         public Serializer() {
@@ -140,6 +170,9 @@ public class Tile {
         public void serialize(Tile tile, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
             jsonGenerator.writeStartObject();
             jsonGenerator.writeBooleanField("colorsNotPalettes", tile.colorsNoPalettes);
+            if (tile.name != null) {
+                jsonGenerator.writeStringField("name", tile.name);
+            }
             jsonGenerator.writeFieldName("tileData");
             jsonGenerator.writeStartArray();
             for (int data : tile.tileData) {
@@ -160,11 +193,16 @@ public class Tile {
         public Tile deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
             JsonNode node = jsonParser.getCodec().readTree(jsonParser);
             boolean colorsNotPalettes = node.get("colorsNotPalettes").asBoolean();
+            JsonNode nameNode = node.get("name");
+            String name = null;
+            if (nameNode != null) {
+                name = nameNode.asText();
+            }
             int[] tileData = new int[64];
             Iterator<JsonNode> it = node.get("tileData").elements();
             int index = 0;
             while (it.hasNext()) tileData[index++] = it.next().asInt();
-            return new Tile(colorsNotPalettes, tileData);
+            return new Tile(colorsNotPalettes, name, tileData);
         }
     }
 }

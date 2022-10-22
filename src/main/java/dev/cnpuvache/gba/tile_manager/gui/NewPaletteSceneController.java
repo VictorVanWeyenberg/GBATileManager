@@ -29,7 +29,7 @@ public class NewPaletteSceneController extends TitledPane {
     private TextField paletteNameTextField;
 
     @FXML
-    private TitledPane titlePane;
+    private TitledPane titledPane;
 
     @FXML
     private Label errorLabel;
@@ -45,9 +45,9 @@ public class NewPaletteSceneController extends TitledPane {
         stage.show();
         this.backgroundNotObject = backgroundNotObject;
         if (backgroundNotObject) {
-            titlePane.setText("New Background Palette");
+            titledPane.setText("New Background Palette");
         } else {
-            titlePane.setText("New Object Palette");
+            titledPane.setText("New Object Palette");
         }
         paletteNameTextField.requestFocus();
     }

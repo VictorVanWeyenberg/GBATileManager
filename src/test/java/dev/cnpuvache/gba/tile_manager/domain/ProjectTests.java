@@ -35,13 +35,13 @@ public class ProjectTests {
         palette16.setColor(3, 4, color2);
         palette16.setColor(5, 6, color3);
 
-        tile1 = new Tile(false);
+        tile1 = new Tile(false, "Tile001");
         for (int i = 0; i < 8; i++) {
             tile1.setTileData(i, 0, 1);
             tile1.setTileData(0, i, 1);
         }
 
-        tile2 = new Tile(false);
+        tile2 = new Tile(false, "Tile002");
         for (int i = 0; i < 8; i++) {
             tile2.setTileData(i, i, 1);
         }

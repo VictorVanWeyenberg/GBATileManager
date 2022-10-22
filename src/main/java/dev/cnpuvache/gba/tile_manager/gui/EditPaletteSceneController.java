@@ -101,7 +101,9 @@ public class EditPaletteSceneController extends BorderPane {
             } catch (IllegalArgumentException ex) {
                 lblError.setText(ex.getMessage());
             }
+            selectColor((selectedIndex + 1) % 16);
             showPalette(selectedPalette, selectedIndex);
+            txfColorRed.requestFocus();
         });
     }
     

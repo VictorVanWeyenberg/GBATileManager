@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -54,6 +55,8 @@ public class Project {
     private final List<Background> backgrounds;
 
     private final CharacterData objectCharacterData;
+
+    private File location;
 
     @JsonCreator
     public Project(
@@ -142,6 +145,14 @@ public class Project {
 
         this.objectCharacterData = new CharacterData(colorNotPalettes);
     }
+
+    public File getLocation() {
+        return location;
+    }
+
+    public void setLocation(File file) {
+        this.location = file;
+    }
     
     public String getName() {
         return name;
@@ -226,6 +237,54 @@ public class Project {
         }
     }
 
+    public void addBackgroundTileToCharacterData(int backgroundNumber, String tileName) {
+        verifyBackgroundNumber(backgroundNumber);
+        System.out.printf("Adding tile %s to background %d.\n", tileName, backgroundNumber);
+        backgrounds.get(backgroundNumber).addTileToCharacterData(tileName);
+    }
+
+    public boolean deleteBackgroundTileFromCharacterData(int backgroundNumber, String tileName) {
+        verifyBackgroundNumber(backgroundNumber);
+        return backgrounds.get(backgroundNumber).deleteTileFromCharacterData(tileName);
+    }
+
+    public void renameBackgroundTile(String oldName, String newName, int backgroundNumber) {
+        verifyBackgroundNumber(backgroundNumber);
+        backgrounds.get(backgroundNumber).renameTile(oldName, newName);
+    }
+
+    public void moveBackgroundTileUp(int backgroundNumber, String tileName) {
+        verifyBackgroundNumber(backgroundNumber);
+        System.out.printf("Moving tile %s of background %d up.\n", tileName, backgroundNumber);
+        backgrounds.get(backgroundNumber).moveTileUp(tileName);
+    }
+
+    public void moveBackgroundTileDown(int backgroundNumber, String tileName) {
+        verifyBackgroundNumber(backgroundNumber);
+        backgrounds.get(backgroundNumber).moveTileDown(tileName);
+    }
+
+    public void addObjectTileToCharacterData(String tileName) {
+        Tile tile = new Tile(paletteType == PaletteType.PALETTE256, tileName);
+        objectCharacterData.addTile(tile);
+    }
+
+    public boolean deleteObjectTileFromCharacterData(String tileName) {
+        return objectCharacterData.removeTile(tileName);
+    }
+
+    public void renameObjectTile(String oldName, String newName) {
+        objectCharacterData.renameTile(oldName, newName);
+    }
+
+    public void moveObjectTileUp(String tileName) {
+        objectCharacterData.moveTileUp(tileName);
+    }
+
+    public void moveObjectTileDown(String tileName) {
+        objectCharacterData.moveTileDown(tileName);
+    }
+
     public List<Tile> getBackgroundTiles(int backgroundNumber) {
         verifyBackgroundNumber(backgroundNumber);
         return backgrounds.get(backgroundNumber).getTiles();
@@ -233,7 +292,7 @@ public class Project {
 
     public Tile getBackgroundTile(int backgroundNumber, String name) {
         if (name == null) {
-            throw new IllegalArgumentException("Tile name is undefined.");
+            return null;
         }
         verifyBackgroundNumber(backgroundNumber);
         Tile tile = backgrounds.get(backgroundNumber).getTiles().stream()
@@ -247,6 +306,13 @@ public class Project {
 
     public List<Tile> getObjectTiles() {
         return objectCharacterData.getTiles();
+    }
+
+    public Tile getObjectTile(String name) {
+        return objectCharacterData.getTiles().stream()
+                .filter(t -> t.getName().equals(name))
+                .findFirst()
+                .orElse(null);
     }
     
     @Override

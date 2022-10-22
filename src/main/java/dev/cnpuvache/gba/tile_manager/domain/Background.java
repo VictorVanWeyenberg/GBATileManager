@@ -69,6 +69,15 @@ public class Background {
         this.screenData = screenData;
     }
 
+    public void addTileToCharacterData(String tileName) {
+        Tile tile = new Tile(colorsNotPalettes, tileName);
+        characterData.addTile(tile);
+    }
+
+    public boolean deleteTileFromCharacterData(String tileName) {
+        return this.characterData.removeTile(tileName);
+    }
+
     public List<Tile> getTiles() {
         return characterData.getTiles();
     }
@@ -86,6 +95,18 @@ public class Background {
                 screenSize == that.screenSize &&
                 characterData.equals(that.characterData) &&
                 screenData.equals(that.screenData);
+    }
+
+    public void renameTile(String oldName, String newName) {
+        characterData.renameTile(oldName, newName);
+    }
+
+    public void moveTileUp(String tileName) {
+        characterData.moveTileUp(tileName);
+    }
+
+    public void moveTileDown(String tileName) {
+        characterData.moveTileDown(tileName);
     }
 
     public static class Builder {
