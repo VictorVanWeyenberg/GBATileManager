@@ -16,7 +16,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
 
-<fx:root maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" onKeyPressed="#mainOnKeyPressed" prefHeight="800.0" prefWidth="1200.0" type="BorderPane" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onKeyPressed="#mainOnKeyPressed" prefHeight="800.0" prefWidth="1200.0" type="BorderPane" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1">
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
@@ -92,7 +92,7 @@
                      </padding>
                      <children>
                         <Label text="Object Tiles" />
-                        <ListView fx:id="listViewObjectTiles" onMouseClicked="#listViewObjectTilesMouseClicked" onKeyPressed="#listViewObjectTilesKeyPressed" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="SOMETIMES" />
+                        <ListView fx:id="listViewObjectTiles" onKeyPressed="#listViewObjectTilesKeyPressed" onMouseClicked="#listViewObjectTilesMouseClicked" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="SOMETIMES" />
                         <ToolBar prefHeight="40.0" prefWidth="200.0">
                            <items>
                               <Button fx:id="btnAddObjectTile" mnemonicParsing="false" onAction="#btnAddObjectTileOnAction" text="Add" />
@@ -103,7 +103,7 @@
                            </VBox.margin>
                         </ToolBar>
                         <Label text="Background Tiles" />
-                        <ListView fx:id="listViewBackgroundTiles" onMouseClicked="#listViewBackgroundTilesMouseClicked" onKeyPressed="#listViewBackgroundTilesKeyPressed" prefHeight="200.0" prefWidth="200.0" />
+                        <ListView fx:id="listViewBackgroundTiles" onKeyPressed="#listViewBackgroundTilesKeyPressed" onMouseClicked="#listViewBackgroundTilesMouseClicked" prefHeight="200.0" prefWidth="200.0" />
                         <ToolBar prefHeight="40.0" prefWidth="200.0">
                            <items>
                               <Button fx:id="btnAddBackgroundTile" mnemonicParsing="false" onAction="#btnAddBackgroundTileOnAction" text="Add" />

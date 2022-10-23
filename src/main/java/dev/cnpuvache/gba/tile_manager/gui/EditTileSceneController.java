@@ -10,6 +10,10 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TitledPane;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
 
 import java.io.IOException;
@@ -25,6 +29,9 @@ public class EditTileSceneController extends TitledPane {
 
     @FXML
     private Slider sldrPalette;
+
+    @FXML
+    private Pane canvasPane;
 
     private final Project project;
 
@@ -55,15 +62,21 @@ public class EditTileSceneController extends TitledPane {
                 setPaletteNumber(selected.intValue());
             }
         });
-
         this.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         showPalette();
-        autosize();
+        canvasPane.widthProperty().addListener((o, p, n) -> setTileSize());
+        setTileSize();
     }
 
-    private void setSize(double width, double height) {
-        setWidth(width);
-        setHeight(height);
+    private void setTileSize() {
+        double paneWidth = canvasPane.getLayoutBounds().getWidth();
+        double paneHeight = canvasPane.getLayoutBounds().getHeight();
+        double min = Math.max(Math.min(paneWidth, paneHeight), 200);
+        if (cvsTile.getWidth() != min) {
+            cvsTile.setWidth(min);
+            cvsTile.setHeight(min);
+            showTile();
+        }
     }
 
     public Palette16 getPalette16() {
@@ -128,8 +141,10 @@ public class EditTileSceneController extends TitledPane {
         if (palette == null) {
             return;
         }
-        int pixelWidth = (int) (cvsTile.getWidth() / 8);
-        // System.out.println(tile);
+        setTileSize();
+        int pixelWidth = (int) (Math.min(canvasPane.getWidth(), canvasPane.getHeight()) / 8);
+        cvsTileGCtx.setFill(Color.LIGHTGRAY);
+        cvsTileGCtx.fillRect(0, 0, pixelWidth*20, pixelWidth*20);
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
                 int pixel = tile.getTileData(x, y);
