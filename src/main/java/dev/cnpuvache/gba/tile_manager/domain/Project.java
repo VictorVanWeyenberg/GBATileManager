@@ -10,10 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
@@ -21,10 +18,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- *
- * @author Reznov
+ * This class holds all classes used to structure colors and tiles, screen and map data and all structures used to
+ * map to the GBA project.
+ * @author cnpuvache
  */
 public class Project {
 
@@ -56,6 +55,8 @@ public class Project {
 
     private final CharacterData objectCharacterData;
 
+    private final Map<String, BackgroundMap> backgroundMaps;
+
     private File location;
 
     @JsonCreator
@@ -67,6 +68,7 @@ public class Project {
             @JsonProperty("objectPalettes") Map<String, Palette> objectPalettes,
             @JsonProperty("backgroundPalettes") Map<String, Palette> backgroundPalettes,
             @JsonProperty("objectCharacterData") CharacterData objectCharacterData,
+            @JsonProperty("screenData") Map<String, BackgroundMap> screenData,
             @JsonProperty("displayOBJ") boolean displayOBJ,
             @JsonProperty("displayBG0") boolean displayBG0,
             @JsonProperty("displayBG1") boolean displayBG1,
@@ -82,6 +84,10 @@ public class Project {
             objectCharacterData = new CharacterData(paletteType == PaletteType.PALETTE256);
         }
         this.objectCharacterData = objectCharacterData;
+        if (screenData == null) {
+            screenData = new TreeMap<>();
+        }
+        this.backgroundMaps = screenData;
         this.displayOBJ = displayOBJ;
         this.displayBG0 = displayBG0;
         this.displayBG1 = displayBG1;
@@ -144,6 +150,7 @@ public class Project {
         }
 
         this.objectCharacterData = new CharacterData(colorNotPalettes);
+        this.backgroundMaps = new TreeMap<>();
     }
 
     public File getLocation() {
@@ -314,6 +321,23 @@ public class Project {
                 .findFirst()
                 .orElse(null);
     }
+
+    public List<String> getBackgroundMapsNames() {
+        return backgroundMaps.keySet().stream().collect(Collectors.toUnmodifiableList());
+    }
+
+    public BackgroundMap getBackgroundMap(String name) {
+        return backgroundMaps.get(name);
+    }
+
+    public void addBackgroundMap(String name) {
+        backgroundMaps.put(name, new BackgroundMap(displayBG0, displayBG1, displayBG2, displayBG3,
+                backgrounds.get(0).getScreenSize(), backgrounds.get(1).getScreenSize(), backgrounds.get(2).getScreenSize(), backgrounds.get(3).getScreenSize()));
+    }
+
+    public void removeBackgroundMap(String name) {
+        backgroundMaps.remove(name);
+    }
     
     @Override
     public String toString() {
@@ -374,6 +398,7 @@ public class Project {
                 paletteType == project.paletteType &&
                 objectPalettes.equals(project.objectPalettes) &&
                 backgroundPalettes.equals(project.backgroundPalettes) &&
+                backgroundMaps.equals(project.backgroundMaps) &&
                 backgrounds.equals(project.backgrounds);
     }
 
@@ -440,6 +465,16 @@ public class Project {
                 jsonGenerator.writeObject(background);
             }
             jsonGenerator.writeEndArray();
+
+            jsonGenerator.writeFieldName("backgroundMaps");
+            jsonGenerator.writeStartArray();
+            for (Map.Entry<String, BackgroundMap> backgroundMapsEntry : project.backgroundMaps.entrySet()) {
+                jsonGenerator.writeStartObject();
+                jsonGenerator.writeStringField("name", backgroundMapsEntry.getKey());
+                jsonGenerator.writeObjectField("map", backgroundMapsEntry.getValue());
+                jsonGenerator.writeEndObject();
+            }
+            jsonGenerator.writeEndArray();
             jsonGenerator.writeEndObject();
         }
     }
@@ -464,6 +499,7 @@ public class Project {
             PaletteType paletteType = PaletteType.valueOf(node.get("paletteType").asText());
 
             ObjectMapper mapper = new ObjectMapper();
+            mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
             Map<String, Palette> objectPalettes = new TreeMap<>();
             for (JsonNode entryNode : node.get("objectPalettes")) {
@@ -491,8 +527,17 @@ public class Project {
                 backgrounds.add(background);
             }
 
+            Map<String, BackgroundMap> backgroundMaps = new TreeMap<>();
+            if (node.get("backgroundMaps") != null) {
+                for (JsonNode screenDataNode : node.get("backgroundMaps")) {
+                    String screenDataName = screenDataNode.get("name").asText();
+                    BackgroundMap screenData = mapper.treeToValue(screenDataNode.get("map"), BackgroundMap.class);
+                    backgroundMaps.put(screenDataName, screenData);
+                }
+            }
+
             return new Project(name, objMapping, paletteType,
-                    backgrounds, objectPalettes, backgroundPalettes, objectCharacterData,
+                    backgrounds, objectPalettes, backgroundPalettes, objectCharacterData, backgroundMaps,
                     displayOBJ, displayBG0, displayBG1, displayBG2, displayBG3);
         }
     }

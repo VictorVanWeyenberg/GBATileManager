@@ -121,9 +121,19 @@
             </content>
           </TitledPane>
             <TitledPane text="Maps">
-              <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-              </content>
+               <content>
+                  <VBox prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <ListView fx:id="listViewMaps" maxHeight="1.7976931348623157E308" onMouseClicked="#listViewMapsMouseClicked" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                        <ToolBar prefHeight="40.0" prefWidth="200.0">
+                          <items>
+                            <Button mnemonicParsing="false" onAction="#btnAddMapOnAction" text="Add" />
+                              <Button mnemonicParsing="false" onAction="#btnDeleteMapOnAction" text="Delete" />
+                          </items>
+                        </ToolBar>
+                     </children>
+                  </VBox>
+               </content>
             </TitledPane>
         </panes>
       </Accordion>

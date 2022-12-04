@@ -138,13 +138,6 @@ public class Tile {
         return colorsNoPalettes == tile.colorsNoPalettes && Arrays.equals(tileData, tile.tileData) && name.equals(tile.name);
     }
 
-    @Override
-    public int hashCode() {
-        int result = Objects.hash(colorsNoPalettes, name);
-        result = 31 * result + Arrays.hashCode(tileData);
-        return result;
-    }
-
     public ByteBuffer toC() {
         ByteBuffer buffer = ByteBuffer.allocate(32).order(ByteOrder.LITTLE_ENDIAN);
         for (int index = 0; index < this.tileData.length; index+=2) {

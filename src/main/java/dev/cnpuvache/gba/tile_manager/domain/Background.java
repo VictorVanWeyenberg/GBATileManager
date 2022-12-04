@@ -15,21 +15,28 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * GBA can display four backgrounds with each their own size, priority, palette type etc.
+ */
 public class Background {
 
     private final int priority;
+    /**
+     * Place in VRAM in increments of 16KB to store tile data.
+     */
     private final int characterBaseBlock;
     private final boolean mosaicEnable = false;
     private final boolean colorsNotPalettes;
+    /**
+     * Place in VRAM in increments of 2KB to store map data.
+     */
     private final int screenBaseBlock;
     private final int screenSize;
     private final CharacterData characterData;
 
-    private final ScreenData screenData;
-
     private Background(int priority, int characterBaseBlock, boolean colorsNotPalettes, int screenBaseBlock,
                        int screenSize) {
-        this(priority, characterBaseBlock, colorsNotPalettes, screenBaseBlock, screenSize, null, null);
+        this(priority, characterBaseBlock, colorsNotPalettes, screenBaseBlock, screenSize, null);
     }
 
     @JsonCreator
@@ -39,8 +46,7 @@ public class Background {
             @JsonProperty("colorsNotPalettes") boolean colorsNotPalettes,
             @JsonProperty("screenBaseBlock") int screenBaseBlock,
             @JsonProperty("screenSize") int screenSize,
-            @JsonProperty("characterData") CharacterData characterData,
-            @JsonProperty("screenData") ScreenData screenData) {
+            @JsonProperty("characterData") CharacterData characterData) {
         if (priority < 0 || priority > 3) {
             throw new IllegalArgumentException("Priority out of bounds.");
         }
@@ -56,9 +62,6 @@ public class Background {
         if (characterData == null) {
             characterData = new CharacterData(colorsNotPalettes);
         }
-        if (screenData == null) {
-            screenData = new ScreenData(screenSize, 0);
-        }
         this.priority = priority;
         this.characterBaseBlock = characterBaseBlock;
         this.colorsNotPalettes = colorsNotPalettes;
@@ -66,7 +69,6 @@ public class Background {
         this.screenSize = screenSize;
 
         this.characterData = characterData;
-        this.screenData = screenData;
     }
 
     public void addTileToCharacterData(String tileName) {
@@ -82,6 +84,10 @@ public class Background {
         return characterData.getTiles();
     }
 
+    public int getScreenSize() {
+        return screenSize;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -93,8 +99,7 @@ public class Background {
                 colorsNotPalettes == that.colorsNotPalettes &&
                 screenBaseBlock == that.screenBaseBlock &&
                 screenSize == that.screenSize &&
-                characterData.equals(that.characterData) &&
-                screenData.equals(that.screenData);
+                characterData.equals(that.characterData);
     }
 
     public void renameTile(String oldName, String newName) {
@@ -117,7 +122,6 @@ public class Background {
         private final int screenSize;
 
         private CharacterData characterData;
-        private ScreenData screenData;
 
         public Builder(int priority, int characterBaseBlock, boolean colorsNotPalettes, int screenBaseBlock,
                            int screenSize) {
@@ -133,14 +137,9 @@ public class Background {
             return this;
         }
 
-        public Builder setScreenData(ScreenData screenData) {
-            this.screenData = screenData;
-            return this;
-        }
-
         public Background build() {
             return new Background(priority, characterBaseBlock, colorsNotPalettes, screenBaseBlock, screenSize,
-                    characterData, screenData);
+                    characterData);
         }
     }
 
@@ -160,8 +159,6 @@ public class Background {
             jsonGenerator.writeNumberField("screenSize", background.screenSize);
             jsonGenerator.writeFieldName("characterData");
             jsonGenerator.writeObject(background.characterData);
-            jsonGenerator.writeFieldName("screenData");
-            jsonGenerator.writeObject(background.screenData);
             jsonGenerator.writeEndObject();
         }
     }
@@ -183,10 +180,9 @@ public class Background {
 
             ObjectMapper mapper = new ObjectMapper();
             CharacterData characterData = mapper.treeToValue(node.get("characterData"), CharacterData.class);
-            ScreenData screenData = mapper.treeToValue(node.get("screenData"), ScreenData.class);
 
             return new Background(priority, characterBaseBlock, colorsNotPalettes, screenBaseBlock, screenSize,
-                    characterData, screenData);
+                    characterData);
         }
     }
 

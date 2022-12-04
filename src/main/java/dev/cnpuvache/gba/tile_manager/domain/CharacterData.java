@@ -19,7 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Block of 16KBytes managing the Tile Data of a background.
+ * Block of 16KBytes managing the Tile data of a background.
  * One tile is 32 bytes so one CharacterData can hold 16384 / 32 = 512 tiles.
  */
 public class CharacterData {

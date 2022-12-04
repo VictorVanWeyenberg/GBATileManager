@@ -51,12 +51,11 @@ public class ProjectTests {
         characterData.addTile(tile2);
 
         screenEntry = new ScreenEntry(49, false, true, 12);
-        screenData = new ScreenData(0, 0);
+        screenData = new ScreenData(0);
         screenData.setEntry(4, 7, screenEntry);
 
         background = new Background.Builder(3, 0, true, 22, 0)
                 .setCharacterData(characterData)
-                .setScreenData(screenData)
                 .build();
 
         List<Background> backgrounds = new ArrayList<>();
@@ -73,9 +72,13 @@ public class ProjectTests {
         backgroundPalettes.put("Default Background Palette", palette16);
         backgroundPalettes.put("Other Background Palette", palette16);
 
+        Map<String, BackgroundMap> backgroundMaps = new TreeMap<>();
+        backgroundMaps.put("Playground map", new BackgroundMap(true, true, true, true, 0, 0, 0, 0));
+        backgroundMaps.put("Edit screen map", new BackgroundMap(true, true, true, true, 0, 0, 0, 0));
+
         project = new Project(
                 "TEST", Project.OBJMapping.ONE_DIMENSIONAL, Project.PaletteType.PALETTE16,
-                backgrounds, objectPalettes, backgroundPalettes, characterData,
+                backgrounds, objectPalettes, backgroundPalettes, characterData, backgroundMaps,
                 true, true, true, false, false);
     }
 
@@ -97,6 +100,8 @@ public class ProjectTests {
         module.addDeserializer(ScreenData.class, new ScreenData.Deserializer());
         module.addSerializer(Background.class, new Background.Serializer());
         module.addDeserializer(Background.class, new Background.Deserializer());
+        module.addSerializer(BackgroundMap.class, new BackgroundMap.Serializer());
+        module.addDeserializer(BackgroundMap.class, new BackgroundMap.Deserializer());
         module.addSerializer(Project.class, new Project.Serializer());
         module.addDeserializer(Project.class, new Project.Deserializer());
         mapper.registerModule(module);

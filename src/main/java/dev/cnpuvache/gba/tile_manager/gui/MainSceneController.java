@@ -40,6 +40,10 @@ import javafx.stage.Stage;
  * @author Reznov
  */
 public class MainSceneController extends BorderPane implements MainSceneInterface {
+
+    // region: ATTRIBUTES ----------------------------------------------------------------------------------------------
+
+    // region: FXML ATTRIBUTES -----------------------------------------------------------------------------------------
     
     @FXML
     private MenuItem menuItemNewProject;
@@ -51,8 +55,6 @@ public class MainSceneController extends BorderPane implements MainSceneInterfac
     private MenuItem menuItemSave;
     @FXML
     private MenuItem menuItemCompileToC;
-    
-    private Project currentProject;
     @FXML
     private ListView<String> listViewObjectPalettes;
     @FXML
@@ -62,14 +64,18 @@ public class MainSceneController extends BorderPane implements MainSceneInterfac
     @FXML
     private ListView<String> listViewBackgroundTiles;
     @FXML
+    private ListView<String> listViewMaps;
+    @FXML
     private Label altLabel;
     @FXML
     private Accordion accordion;
     @FXML
     private ChoiceBox<Backgrounds> choiceBoxBackgroundTiles;
-
+    // endregion
+    private Project currentProject;
     private EditPaletteSceneController editPaletteSceneController;
     private EditTileSceneController editTileSceneController;
+    // endregion
 
     public MainSceneController(Stage primaryStage) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/MainScene.fxml"));
@@ -89,42 +95,9 @@ public class MainSceneController extends BorderPane implements MainSceneInterfac
         choiceBoxBackgroundTiles.getSelectionModel().selectedIndexProperty().addListener((o, n, v) -> updateView());
     }
 
-    private void focusObjectPalettesListView() {
-        listViewObjectPalettes.requestFocus();
-        TitledPane pane = accordion.getPanes().stream()
-                .filter(p -> p.getText().toLowerCase().contains("palette"))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Palette pane missing???"));
-        pane.setExpanded(true);
-        selectObjectPalette();
-    }
-    private void focusBackgroundPalettesListView() {
-        listViewBackgroundPalettes.requestFocus();
-        TitledPane pane = accordion.getPanes().stream()
-                .filter(p -> p.getText().toLowerCase().contains("palette"))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Palette pane missing???"));
-        pane.setExpanded(true);
-        selectBackgroundPalette();
-    }
-    private void focusObjectTilesListView() {
-        listViewObjectTiles.requestFocus();
-        TitledPane pane = accordion.getPanes().stream()
-                .filter(p -> p.getText().toLowerCase().contains("tile"))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Tile pane missing???"));
-        pane.setExpanded(true);
-        selectObjectTile();
-    }
-    private void focusBackgroundTilesListView() {
-        listViewBackgroundTiles.requestFocus();
-        TitledPane pane = accordion.getPanes().stream()
-                .filter(p -> p.getText().toLowerCase().contains("tile"))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Tile pane missing???"));
-        pane.setExpanded(true);
-        selectBackgroundTile();
-    }
+    // region: 0 MAIN SCENE STUFF --------------------------------------------------------------------------------------
+
+    // region: 0.1 FXML LISTENERS --------------------------------------------------------------------------------------
 
     @FXML
     public void mainOnKeyPressed(KeyEvent event) {
@@ -145,6 +118,43 @@ public class MainSceneController extends BorderPane implements MainSceneInterfac
             }
         }
     }
+
+    // endregion
+
+    private void updateView() {
+        if (currentProject != null) {
+            listViewObjectPalettes.setItems(FXCollections.observableArrayList(this.currentProject.getObjectPalettes().keySet()));
+            listViewBackgroundPalettes.setItems(FXCollections.observableArrayList(this.currentProject.getBackgroundPalettes().keySet()));
+            listViewObjectTiles.setItems(FXCollections.observableArrayList(this.currentProject.getObjectTiles().stream().map(Tile::getName).collect(Collectors.toList())));
+            int backgroundIndex = choiceBoxBackgroundTiles.getSelectionModel().getSelectedIndex();
+            listViewBackgroundTiles.setItems(FXCollections.observableArrayList(this.currentProject.getBackgroundTiles(backgroundIndex).stream().map(Tile::getName).collect(Collectors.toList())));
+            listViewMaps.setItems(FXCollections.observableArrayList(currentProject.getBackgroundMapsNames()));
+        }
+        menuItemSave.setDisable(currentProject == null || currentProject.getLocation() == null);
+        menuItemSaveAs.setDisable(currentProject == null);
+        menuItemCompileToC.setDisable(currentProject == null);
+    }
+
+    private void altLog(String message) {
+        altLabel.setTextFill(Color.BLACK);
+        altLabel.setText(message);
+    }
+
+    private void altError(String message) {
+        altLabel.setTextFill(Color.RED);
+        altLabel.setText(message);
+    }
+
+    @Override
+    public void setProject(Project project) {
+        this.currentProject = project;
+        updateView();
+        altLog("Opened project " + project.getName());
+    }
+
+    // endregion
+
+    // region: 1 MENU --------------------------------------------------------------------------------------------------
 
     @FXML
     public void menuItemNewProjectOnAction() {
@@ -220,6 +230,19 @@ public class MainSceneController extends BorderPane implements MainSceneInterfac
     public void menuItemCompileToCOnAction() {
     }
 
+    // endregion
+
+    // region: 2 PALETTES ----------------------------------------------------------------------------------------------
+
+    // region: 2.1 OBJECT PALETTES -------------------------------------------------------------------------------------
+
+    // region: 2.1.1 FXML LISTENERS ------------------------------------------------------------------------------------
+
+    @FXML
+    public void listViewObjectPalettesMouseClicked(MouseEvent event) {
+        selectObjectPalette();
+    }
+
     @FXML
     public void btnAddObjectPaletteClicked() {
         if (currentProject == null) {
@@ -246,6 +269,64 @@ public class MainSceneController extends BorderPane implements MainSceneInterfac
         }
         currentProject.deleteObjectPalette(selectedPalette);
         updateView();
+    }
+
+    @FXML
+    public void btnMakeDefaultObjectPaletteClicked() {
+        String selected = listViewObjectPalettes.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            return;
+        }
+        currentProject.setDefaultObjectPalette(selected);
+    }
+
+    // endregion
+
+    @Override
+    public void addObjectPalette(String paletteName, boolean makeDefault) {
+        currentProject.addObjectPalette(paletteName, new Palette16(paletteName), makeDefault);
+        updateView();
+        altLog("Added object palette " + paletteName);
+    }
+
+    @Override
+    public Collection<String> getObjectPaletteNames() {
+        return listViewObjectPalettes.getItems();
+    }
+
+    private void selectObjectPalette() {
+        try {
+            String selected = listViewObjectPalettes.getSelectionModel().getSelectedItem();
+            if (selected == null) listViewObjectPalettes.getSelectionModel().selectFirst();
+            if (MainSceneController.this.editPaletteSceneController == null) {
+                MainSceneController.this.editPaletteSceneController = new EditPaletteSceneController();
+            }
+            setCenter(editPaletteSceneController);
+            MainSceneController.this.editPaletteSceneController.setPalette(currentProject.getObjectPalette(selected));
+        } catch (IOException ex) {
+            Logger.getLogger(MainSceneController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void focusObjectPalettesListView() {
+        listViewObjectPalettes.requestFocus();
+        TitledPane pane = accordion.getPanes().stream()
+                .filter(p -> p.getText().toLowerCase().contains("palette"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Palette pane missing???"));
+        pane.setExpanded(true);
+        selectObjectPalette();
+    }
+
+    // endregion
+
+    // region: 2.2 BACKGROUND PALETTES ---------------------------------------------------------------------------------
+
+    // region: 2.2.1 FXML LISTENERS ------------------------------------------------------------------------------------
+
+    @FXML
+    public void listViewBackgroundPalettesMouseClicked(MouseEvent event) {
+        selectBackgroundPalette();
     }
 
     @FXML
@@ -277,21 +358,26 @@ public class MainSceneController extends BorderPane implements MainSceneInterfac
     }
 
     @FXML
-    public void btnMakeDefaultObjectPaletteClicked() {
-        String selected = listViewObjectPalettes.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            return;
-        }
-        currentProject.setDefaultObjectPalette(selected);
-    }
-
-    @FXML
     public void btnMakeDefaultBackgroundPaletteClicked() {
         String selected = listViewBackgroundPalettes.getSelectionModel().getSelectedItem();
         if (selected == null) {
             return;
         }
         currentProject.setDefaultBackgroundPalette(selected);
+    }
+
+    // endregion
+
+    @Override
+    public void addBackgroundPalette(String paletteName, boolean makeDefault) {
+        currentProject.addBackgroundPalette(paletteName, new Palette16(paletteName), makeDefault);
+        updateView();
+        altLog("Added background palette " + paletteName);
+    }
+
+    @Override
+    public Collection<String> getBackgroundPaletteNames() {
+        return listViewBackgroundPalettes.getItems();
     }
 
     private void selectBackgroundPalette() {
@@ -308,61 +394,29 @@ public class MainSceneController extends BorderPane implements MainSceneInterfac
         }
     }
 
-    @FXML
-    public void listViewBackgroundPalettesMouseClicked(MouseEvent event) {
+    private void focusBackgroundPalettesListView() {
+        listViewBackgroundPalettes.requestFocus();
+        TitledPane pane = accordion.getPanes().stream()
+                .filter(p -> p.getText().toLowerCase().contains("palette"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Palette pane missing???"));
+        pane.setExpanded(true);
         selectBackgroundPalette();
     }
 
-    private void selectObjectPalette() {
-        try {
-            String selected = listViewObjectPalettes.getSelectionModel().getSelectedItem();
-            if (selected == null) listViewObjectPalettes.getSelectionModel().selectFirst();
-            if (MainSceneController.this.editPaletteSceneController == null) {
-                MainSceneController.this.editPaletteSceneController = new EditPaletteSceneController();
-            }
-            setCenter(editPaletteSceneController);
-            MainSceneController.this.editPaletteSceneController.setPalette(currentProject.getObjectPalette(selected));
-        } catch (IOException ex) {
-            Logger.getLogger(MainSceneController.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+    // endregion
+
+    // endregion
+
+    // region: 3 TILES -------------------------------------------------------------------------------------------------
+
+    // region: 3.1 OBJECT TILES ----------------------------------------------------------------------------------------
+
+    // region: 3.1.1 FXML LISTENERS ------------------------------------------------------------------------------------
 
     @FXML
-    public void listViewObjectPalettesMouseClicked(MouseEvent event) {
-        selectObjectPalette();
-    }
-
-    private void selectBackgroundTile() {
-        selectBackgroundTile(null);
-    }
-
-    private void selectBackgroundTile(String tileName) {
-        try {
-            if (tileName != null) listViewBackgroundTiles.getSelectionModel().select(tileName);
-            String selected = listViewBackgroundTiles.getSelectionModel().getSelectedItem();
-            if (selected == null) {
-                listViewBackgroundTiles.getSelectionModel().selectFirst();
-            }
-            int backgroundIndex = choiceBoxBackgroundTiles.getSelectionModel().getSelectedIndex();
-            Tile tile = currentProject.getBackgroundTile(backgroundIndex, selected);
-            if (tile == null) {
-                return;
-            }
-            if (MainSceneController.this.editTileSceneController == null) {
-                MainSceneController.this.editTileSceneController = new EditTileSceneController(currentProject);
-            }
-            setCenter(editTileSceneController);
-            editTileSceneController.setTile(tile, true);
-        } catch (IllegalArgumentException ex) {
-            System.out.println(ex.getMessage());
-        } catch (IOException e) {
-            System.out.println("Unable to load Edit Tile Scene.");
-        }
-    }
-
-    @FXML
-    public void listViewBackgroundTilesMouseClicked() {
-        selectBackgroundTile();
+    public void listViewObjectTilesMouseClicked() {
+        selectObjectTile();
     }
 
     @FXML
@@ -394,6 +448,54 @@ public class MainSceneController extends BorderPane implements MainSceneInterfac
         }
     }
 
+    @FXML
+    public void btnAddObjectTileOnAction() {
+        try {
+            new NewTileSceneController(this);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @FXML
+    public void btnDeleteObjectTileOnAction() {
+        if (currentProject == null) {
+            altError("You can't delete a tile until you've opened or created a project");
+            return;
+        }
+        String selectedTile = listViewObjectTiles.getSelectionModel().getSelectedItem();
+        if (selectedTile == null || selectedTile.isBlank()) {
+            altLog("Select a tile to delete.");
+            return;
+        }
+        if (!currentProject.deleteObjectTileFromCharacterData(selectedTile)) {
+            altError(String.format("Unable to remove tile %s from project object character data.", selectedTile));
+        }
+        updateView();
+    }
+
+    // endregion
+
+    @Override
+    public Collection<String> getObjectTileNames() {
+        return currentProject.getObjectTiles().stream()
+                .map(Tile::getName)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void addObjectTile(String tileName) {
+        System.out.println("Adding object tile");
+        if (getObjectTileNames().contains(tileName)) {
+            altError(String.format("Object tile with name %s already exists.", tileName));
+            return;
+        }
+        currentProject.addObjectTileToCharacterData(tileName);
+        updateView();
+        selectObjectTile(tileName);
+        listViewObjectTiles.requestFocus();
+    }
+
     private void selectObjectTile() {
         selectObjectTile(null);
     }
@@ -421,9 +523,32 @@ public class MainSceneController extends BorderPane implements MainSceneInterfac
         }
     }
 
-    @FXML
-    public void listViewObjectTilesMouseClicked() {
+    private void focusObjectTilesListView() {
+        listViewObjectTiles.requestFocus();
+        TitledPane pane = accordion.getPanes().stream()
+                .filter(p -> p.getText().toLowerCase().contains("tile"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Tile pane missing???"));
+        pane.setExpanded(true);
         selectObjectTile();
+    }
+
+    @Override
+    public void renameObjectTile(String oldName, String newName) {
+        currentProject.renameObjectTile(oldName, newName);
+        updateView();
+        selectObjectTile(newName);
+    }
+
+    // endregion
+
+    // region: 3.2 BACKGROUND TILES ------------------------------------------------------------------------------------
+
+    // region 3.2.1 FXML LISTENERS -------------------------------------------------------------------------------------
+
+    @FXML
+    public void listViewBackgroundTilesMouseClicked() {
+        selectBackgroundTile();
     }
 
     @FXML
@@ -459,32 +584,6 @@ public class MainSceneController extends BorderPane implements MainSceneInterfac
     }
 
     @FXML
-    public void btnAddObjectTileOnAction() {
-        try {
-            new NewTileSceneController(this);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @FXML
-    public void btnDeleteObjectTileOnAction() {
-        if (currentProject == null) {
-            altError("You can't delete a tile until you've opened or created a project");
-            return;
-        }
-        String selectedTile = listViewObjectTiles.getSelectionModel().getSelectedItem();
-        if (selectedTile == null || selectedTile.isBlank()) {
-            altLog("Select a tile to delete.");
-            return;
-        }
-        if (!currentProject.deleteObjectTileFromCharacterData(selectedTile)) {
-            altError(String.format("Unable to remove tile %s from project object character data.", selectedTile));
-        }
-        updateView();
-    }
-
-    @FXML
     public void btnAddBackgroundTileOnAction() {
         int selectedIndex = choiceBoxBackgroundTiles.getSelectionModel().getSelectedIndex();
         try {
@@ -512,66 +611,7 @@ public class MainSceneController extends BorderPane implements MainSceneInterfac
         updateView();
     }
 
-    private void updateView() {
-        if (currentProject != null) {
-            listViewObjectPalettes.setItems(FXCollections.observableArrayList(this.currentProject.getObjectPalettes().keySet()));
-            listViewBackgroundPalettes.setItems(FXCollections.observableArrayList(this.currentProject.getBackgroundPalettes().keySet()));
-            listViewObjectTiles.setItems(FXCollections.observableArrayList(this.currentProject.getObjectTiles().stream().map(Tile::getName).collect(Collectors.toList())));
-            int backgroundIndex = choiceBoxBackgroundTiles.getSelectionModel().getSelectedIndex();
-            listViewBackgroundTiles.setItems(FXCollections.observableArrayList(this.currentProject.getBackgroundTiles(backgroundIndex).stream().map(Tile::getName).collect(Collectors.toList())));
-        }
-        menuItemSave.setDisable(currentProject == null || currentProject.getLocation() == null);
-        menuItemSaveAs.setDisable(currentProject == null);
-        menuItemCompileToC.setDisable(currentProject == null);
-    }
-
-    private void altLog(String message) {
-        altLabel.setTextFill(Color.BLACK);
-        altLabel.setText(message);
-    }
-
-    private void altError(String message) {
-        altLabel.setTextFill(Color.RED);
-        altLabel.setText(message);
-    }
-
-    @Override
-    public void setProject(Project project) {
-        this.currentProject = project;
-        updateView();
-        altLog("Opened project " + project.getName());
-    }
-
-    @Override
-    public void addBackgroundPalette(String paletteName, boolean makeDefault) {
-        currentProject.addBackgroundPalette(paletteName, new Palette16(paletteName), makeDefault);
-        updateView();
-        altLog("Added background palette " + paletteName);
-    }
-
-    @Override
-    public void addObjectPalette(String paletteName, boolean makeDefault) {
-        currentProject.addObjectPalette(paletteName, new Palette16(paletteName), makeDefault);
-        updateView();
-        altLog("Added object palette " + paletteName);
-    }
-
-    @Override
-    public Collection<String> getBackgroundPaletteNames() {
-        return listViewBackgroundPalettes.getItems();
-    }
-
-    @Override
-    public Collection<String> getObjectPaletteNames() {
-        return listViewObjectPalettes.getItems();
-    }
-
-    @Override
-    public Collection<String> getBackgroundTileNames(int backgroundNumber) {
-        return currentProject.getBackgroundTiles(backgroundNumber).stream()
-                .map(Tile::getName)
-                .collect(Collectors.toList());
-    }
+    // endregion
 
     @Override
     public void addBackgroundTile(String tileName, int backgroundNumber) {
@@ -588,23 +628,48 @@ public class MainSceneController extends BorderPane implements MainSceneInterfac
     }
 
     @Override
-    public Collection<String> getObjectTileNames() {
-        return currentProject.getObjectTiles().stream()
+    public Collection<String> getBackgroundTileNames(int backgroundNumber) {
+        return currentProject.getBackgroundTiles(backgroundNumber).stream()
                 .map(Tile::getName)
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public void addObjectTile(String tileName) {
-        System.out.println("Adding object tile");
-        if (getObjectTileNames().contains(tileName)) {
-            altError(String.format("Object tile with name %s already exists.", tileName));
-            return;
+    private void selectBackgroundTile() {
+        selectBackgroundTile(null);
+    }
+
+    private void selectBackgroundTile(String tileName) {
+        try {
+            if (tileName != null) listViewBackgroundTiles.getSelectionModel().select(tileName);
+            String selected = listViewBackgroundTiles.getSelectionModel().getSelectedItem();
+            if (selected == null) {
+                listViewBackgroundTiles.getSelectionModel().selectFirst();
+            }
+            int backgroundIndex = choiceBoxBackgroundTiles.getSelectionModel().getSelectedIndex();
+            Tile tile = currentProject.getBackgroundTile(backgroundIndex, selected);
+            if (tile == null) {
+                return;
+            }
+            if (MainSceneController.this.editTileSceneController == null) {
+                MainSceneController.this.editTileSceneController = new EditTileSceneController(currentProject);
+            }
+            setCenter(editTileSceneController);
+            editTileSceneController.setTile(tile, true);
+        } catch (IllegalArgumentException ex) {
+            System.out.println(ex.getMessage());
+        } catch (IOException e) {
+            System.out.println("Unable to load Edit Tile Scene.");
         }
-        currentProject.addObjectTileToCharacterData(tileName);
-        updateView();
-        selectObjectTile(tileName);
-        listViewObjectTiles.requestFocus();
+    }
+
+    private void focusBackgroundTilesListView() {
+        listViewBackgroundTiles.requestFocus();
+        TitledPane pane = accordion.getPanes().stream()
+                .filter(p -> p.getText().toLowerCase().contains("tile"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Tile pane missing???"));
+        pane.setExpanded(true);
+        selectBackgroundTile();
     }
 
     @Override
@@ -614,10 +679,66 @@ public class MainSceneController extends BorderPane implements MainSceneInterfac
         selectBackgroundTile(newName);
     }
 
-    @Override
-    public void renameObjectTile(String oldName, String newName) {
-        currentProject.renameObjectTile(oldName, newName);
-        updateView();
-        selectObjectTile(newName);
+    // endregion
+
+    // endregion
+
+    // region: 4 MAPS --------------------------------------------------------------------------------------------------
+
+    // region: 4.1 FXML LISTENERS --------------------------------------------------------------------------------------
+
+    @FXML
+    public void btnAddMapOnAction() {
+        if (currentProject == null) {
+            altError("You can't add a map until you've opened or created a project");
+            return;
+        }
+        try {
+            new NewMapSceneController(this);
+        } catch (IOException ex) {
+            Logger.getLogger(MainSceneController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
+
+    @FXML
+    public void btnDeleteMapOnAction() {
+        if (currentProject == null) {
+            altError("You can't delete a map until you've opened or created a project");
+            return;
+        }
+        String selectedMap = listViewMaps.getSelectionModel().getSelectedItem();
+        if (selectedMap == null || selectedMap.isBlank()) {
+            altLog("Select an object palette to delete.");
+            return;
+        }
+        currentProject.removeBackgroundMap(selectedMap);
+        updateView();
+    }
+
+    @FXML
+    public void listViewMapsMouseClicked() {
+        selectBackgroundMap();
+    }
+
+    // endregion
+
+    public void createMap(String mapName) {
+        currentProject.addBackgroundMap(mapName);
+        updateView();
+    }
+
+    private void selectBackgroundMap() {
+        try {
+            String selected = listViewMaps.getSelectionModel().getSelectedItem();
+            if (selected == null) listViewMaps.getSelectionModel().selectFirst();
+            selected = listViewMaps.getSelectionModel().getSelectedItem();
+            EditMapsSceneController editMapsSceneController = new EditMapsSceneController(currentProject);
+            editMapsSceneController.selectMap(selected);
+            setCenter(editMapsSceneController);
+        } catch (IOException ex) {
+            Logger.getLogger(MainSceneController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    // endregion
 }

@@ -32,13 +32,6 @@ public class TileTests {
     }
 
     @Test
-    public void tileToCFromCDoesNotChange() {
-        String compiledC = tile.toCCode();
-        Tile parsedTile = Tile.fromC(compiledC, false);
-        assertEquals(tile, parsedTile);
-    }
-
-    @Test
     public void objectMapperTest() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();

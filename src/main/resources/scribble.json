@@ -1,0 +1,47 @@
+{
+  "enabledBackgrounds" : [ true, true, false, false ],
+  "screenSizes" : [ 0, 1, 2, 3 ],
+  "screenData" : [ {
+    "screenSize" : 0,
+    "data" : [ {
+      "x" : 0,
+      "y" : 0,
+      "entry" : {
+        "tileNumber" : 0,
+        "horizontalFlip" : false,
+        "verticalFlip" : false,
+        "paletteNumber" : 0
+      }
+    }, {
+      "x" : 1,
+      "y" : 2,
+      "entry" : {
+        "tileNumber" : 3,
+        "horizontalFlip" : false,
+        "verticalFlip" : false,
+        "paletteNumber" : 4
+      }
+    } ]
+  }, {
+    "screenSize" : 1,
+    "data" : [ {
+      "x" : 1,
+      "y" : 1,
+      "entry" : {
+        "tileNumber" : 1,
+        "horizontalFlip" : false,
+        "verticalFlip" : false,
+        "paletteNumber" : 0
+      }
+    }, {
+      "x" : 2,
+      "y" : 3,
+      "entry" : {
+        "tileNumber" : 4,
+        "horizontalFlip" : false,
+        "verticalFlip" : false,
+        "paletteNumber" : 5
+      }
+    } ]
+  }, null, null ]
+}

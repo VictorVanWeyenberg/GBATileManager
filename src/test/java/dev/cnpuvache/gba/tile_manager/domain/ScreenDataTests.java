@@ -12,13 +12,17 @@ public class ScreenDataTests {
 
     private ScreenData screenData;
 
-    private ScreenEntry screenEntry;
-
     @BeforeEach
     public void setup() {
-        screenEntry = new ScreenEntry(49, false, true, 12);
-        screenData = new ScreenData(0, 0);
-        screenData.setEntry(4, 7, screenEntry);
+        ScreenEntry screenEntry1 = new ScreenEntry(49, false, false, 12);
+        ScreenEntry screenEntry2 = new ScreenEntry(86, false, true, 0);
+        ScreenEntry screenEntry3 = new ScreenEntry(61, true, false, 1);
+        ScreenEntry screenEntry4 = new ScreenEntry(24, true, true, 2);
+        screenData = new ScreenData(0);
+        screenData.setEntry(4, 7, screenEntry1);
+        screenData.setEntry(4, 8, screenEntry2);
+        screenData.setEntry(9, 7, screenEntry3);
+        screenData.setEntry(4, 15, screenEntry4);
     }
 
     @Test
@@ -31,7 +35,7 @@ public class ScreenDataTests {
         module.addDeserializer(ScreenData.class, new ScreenData.Deserializer());
         mapper.registerModule(module);
 
-        String json = mapper.writeValueAsString(screenData);
+        String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(screenData);
         System.out.println(json);
 
         ScreenData parsedScreenData = mapper.readValue(json, ScreenData.class);

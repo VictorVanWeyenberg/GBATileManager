@@ -36,4 +36,6 @@ public interface MainSceneInterface {
     void renameBackgroundTile(String oldName, String newName, int backgroundNumber);
 
     void renameObjectTile(String oldName, String newName);
+
+    void createMap(String mapName);
 }

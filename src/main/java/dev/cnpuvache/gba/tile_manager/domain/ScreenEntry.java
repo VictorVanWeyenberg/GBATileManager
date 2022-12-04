@@ -38,6 +38,22 @@ public class ScreenEntry {
         this.paletteNumber = paletteNumber;
     }
 
+    public int getTileNumber() {
+        return tileNumber;
+    }
+
+    public boolean isHorizontalFlip() {
+        return horizontalFlip;
+    }
+
+    public boolean isVerticalFlip() {
+        return verticalFlip;
+    }
+
+    public int getPaletteNumber() {
+        return paletteNumber;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

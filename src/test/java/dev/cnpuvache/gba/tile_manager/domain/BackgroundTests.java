@@ -35,12 +35,11 @@ public class BackgroundTests {
         characterData.addTile(tile2);
 
         screenEntry = new ScreenEntry(49, false, true, 12);
-        screenData = new ScreenData(0, 0);
+        screenData = new ScreenData(0, null);
         screenData.setEntry(4, 7, screenEntry);
 
         background = new Background.Builder(3, 0, true, 22, 0)
                 .setCharacterData(characterData)
-                .setScreenData(screenData)
                 .build();
     }
 

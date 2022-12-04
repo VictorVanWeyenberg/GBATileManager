@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<fx:root animated="false" collapsible="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="555.0" prefWidth="923.0" text="Edit Maps" type="TitledPane" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1">
+   <content>
+      <HBox prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="200.0">
+               <children>
+                  <RadioButton fx:id="radioBackground1" mnemonicParsing="false" onAction="#radioBackground1OnAction" selected="true" text="Background 1">
+                     <VBox.margin>
+                        <Insets bottom="5.0" />
+                     </VBox.margin>
+                     <toggleGroup>
+                        <ToggleGroup fx:id="BACKGROUNDS" />
+                     </toggleGroup>
+                  </RadioButton>
+                  <RadioButton fx:id="radioBackground2" mnemonicParsing="false" onAction="#radioBackground2OnAction" text="Background 2" toggleGroup="$BACKGROUNDS">
+                     <VBox.margin>
+                        <Insets bottom="5.0" />
+                     </VBox.margin>
+                  </RadioButton>
+                  <RadioButton fx:id="radioBackground3" mnemonicParsing="false" onAction="#radioBackground3OnAction" text="Background 3" toggleGroup="$BACKGROUNDS">
+                     <VBox.margin>
+                        <Insets bottom="5.0" />
+                     </VBox.margin>
+                  </RadioButton>
+                  <RadioButton fx:id="radioBackground4" mnemonicParsing="false" onAction="#radioBackground4OnAction" text="Background 4" toggleGroup="$BACKGROUNDS">
+                     <VBox.margin>
+                        <Insets bottom="5.0" />
+                     </VBox.margin>
+                  </RadioButton>
+                  <CheckBox fx:id="checkBoxShowAllBackgrounds" mnemonicParsing="false" onAction="#checkBoxShowAllBackgroundsOnAction" text="Show all backgrounds" />
+                  <Separator prefWidth="200.0" />
+                  <Label text="Palette" />
+                  <Slider fx:id="sliderPalette" blockIncrement="1.0" majorTickUnit="1.0" max="15.0" minorTickCount="1" showTickMarks="true" snapToTicks="true" />
+                  <Separator prefWidth="200.0" />
+                  <HBox prefHeight="100.0" prefWidth="200.0">
+                     <children>
+                        <CheckBox fx:id="checkHFlip" mnemonicParsing="false" onAction="#checkHFlipOnAction" text="H-Flip">
+                           <HBox.margin>
+                              <Insets right="5.0" />
+                           </HBox.margin>
+                        </CheckBox>
+                        <CheckBox fx:id="checkVFlip" mnemonicParsing="false" onAction="#checkVFlipOnAction" text="V-Flip" />
+                     </children>
+                  </HBox>
+                  <Separator prefWidth="200.0" />
+                  <ListView fx:id="listViewTiles" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onMouseClicked="#listViewTilesOnMouseClicked" />
+               </children>
+            </VBox>
+            <Separator orientation="VERTICAL" prefHeight="200.0" />
+            <Pane fx:id="canvasPane" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+               <children>
+                  <Canvas fx:id="cvsBackground" height="200.0" width="200.0" />
+               </children>
+            </Pane>
+         </children>
+      </HBox>
+   </content>
+</fx:root>
