@@ -1,8 +1,11 @@
 package dev.cnpuvache.gba.tile_manager.domain;
 
-import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.core.*;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,22 +20,23 @@ import java.util.*;
 
 public class ScreenData {
 
+    private final int screenSize;
     private final int width;
     private final int height;
+
+    private int characterDataIndex;
     @JsonDeserialize(using = ScreenDataDataDeserializer.class)
     private final TreeMap<Integer, Map<Integer, ScreenEntry>> data;
-    // private final ScreenEntry[][] data;
 
-    private final int screenSize;
-
-    public ScreenData(int screenSize) {
-        this(screenSize, null);
+    public ScreenData(int screenSize, int characterDataIndex) {
+        this(screenSize, null, characterDataIndex);
     }
 
     @JsonCreator
     public ScreenData(
             @JsonProperty("screenSize") int screenSize,
-            @JsonProperty("data") TreeMap<Integer, Map<Integer, ScreenEntry>> data) {
+            @JsonProperty("data") TreeMap<Integer, Map<Integer, ScreenEntry>> data,
+            @JsonProperty("characterDataIndex") int characterDataIndex) {
         this.screenSize = screenSize;
         this.width = screenSize % 2 == 0 ? 32 : 64;
         this.height = screenSize / 2 == 0 ? 32 : 64;
@@ -43,19 +47,22 @@ public class ScreenData {
         }
     }
 
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public int getScreenSize() {
+        return screenSize;
+    }
+
     public ScreenEntry getEntry(int x, int y) {
         Map<Integer, ScreenEntry> row = data.get(y);
         if (row == null) return null;
         return row.get(x);
-    }
-
-    public void setEntry(int x, int y, int tileNumber) {
-        this.setEntry(x, y, tileNumber, 0);
-    }
-
-    public void setEntry(int x, int y, int tileNumber, int paletteNumber) {
-        ScreenEntry entry = new ScreenEntry(tileNumber, false, false, paletteNumber);
-        setEntry(x, y, entry);
     }
 
     public void setEntry(int x, int y, ScreenEntry entry) {
@@ -71,12 +78,63 @@ public class ScreenData {
         data.get(y).put(x, entry);
     }
 
+    public void removeTile(int tileNumber) {
+        for (Map.Entry<Integer, Map<Integer, ScreenEntry>> row : data.entrySet()) {
+            for (Map.Entry<Integer, ScreenEntry> cell : row.getValue().entrySet()) {
+                ScreenEntry entry = cell.getValue();
+                if (entry.getTileNumber() == tileNumber) {
+                    data.get(row.getKey()).put(cell.getKey(), new ScreenEntry(0, false, false, 0));
+                } else if (entry.getTileNumber() > tileNumber) {
+                    data.get(row.getKey()).put(cell.getKey(), new ScreenEntry(entry.getTileNumber() - 1, entry.isHorizontalFlip(), entry.isVerticalFlip(), entry.getPaletteNumber()));
+                }
+            }
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ScreenData that = (ScreenData) o;
         return width == that.width && height == that.height && screenSize == that.screenSize && data.equals(that.data);
+    }
+
+    public int getCharacterDataIndex() {
+        return characterDataIndex;
+    }
+
+    public void setCharacterDataIndex(int characterDataIndex) {
+        this.characterDataIndex = characterDataIndex;
+    }
+
+    public void moveTileUp(int tileNumber) {
+        for(Map.Entry<Integer, Map<Integer, ScreenEntry>> row : data.entrySet()) {
+            for (Map.Entry<Integer, ScreenEntry> cell : row.getValue().entrySet()) {
+                ScreenEntry entry = cell.getValue();
+                if (entry.getTileNumber() == tileNumber) {
+                    data.get(row.getKey())
+                            .put(cell.getKey(), new ScreenEntry(tileNumber - 1, entry.isHorizontalFlip(), entry.isVerticalFlip(), entry.getPaletteNumber()));
+                } else if (entry.getTileNumber() == tileNumber - 1) {
+                    data.get(row.getKey())
+                            .put(cell.getKey(), new ScreenEntry(tileNumber, entry.isHorizontalFlip(), entry.isVerticalFlip(), entry.getPaletteNumber()));
+                }
+            }
+        }
+    }
+
+    public void moveTileDown(int tileNumber) {
+        for(Map.Entry<Integer, Map<Integer, ScreenEntry>> row : data.entrySet()) {
+            for (Map.Entry<Integer, ScreenEntry> cell : row.getValue().entrySet()) {
+                ScreenEntry entry = cell.getValue();
+                if (entry.getTileNumber() == tileNumber) {
+                    data.get(row.getKey())
+                            .put(cell.getKey(), new ScreenEntry(tileNumber + 1, entry.isHorizontalFlip(), entry.isVerticalFlip(), entry.getPaletteNumber()));
+                } else if (entry.getTileNumber() == tileNumber + 1) {
+                    data.get(row.getKey())
+                            .put(cell.getKey(), new ScreenEntry(tileNumber, entry.isHorizontalFlip(), entry.isVerticalFlip(), entry.getPaletteNumber()));
+                }
+            }
+        }
     }
 
     public static final class Serializer extends StdSerializer<ScreenData> {
@@ -89,6 +147,7 @@ public class ScreenData {
         public void serialize(ScreenData screenData, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
             jsonGenerator.writeStartObject();
             jsonGenerator.writeNumberField("screenSize", screenData.screenSize);
+            jsonGenerator.writeNumberField("characterDataIndex", screenData.characterDataIndex);
             jsonGenerator.writeArrayFieldStart("data");
             for (Map.Entry<Integer, Map<Integer, ScreenEntry>> yEntry : screenData.data.entrySet()) {
                 int y = yEntry.getKey();
@@ -117,7 +176,8 @@ public class ScreenData {
         public ScreenData deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
             JsonNode node = jsonParser.getCodec().readTree(jsonParser);
             int screenSize = node.get("screenSize").asInt();
-            ScreenData screenData = new ScreenData(screenSize);
+            int characterDataIndex = node.get("characterDataIndex").asInt();
+            ScreenData screenData = new ScreenData(screenSize, characterDataIndex);
             ObjectMapper mapper = new ObjectMapper();
             Iterator<JsonNode> dataIterator = node.get("data").elements();
             while (dataIterator.hasNext()) {

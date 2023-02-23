@@ -5,7 +5,7 @@ path=""
 for f in $(find target -name "*.jar"); do
 	path="$path:$f"
 done
-module_path="/home/cnpuvache/Downloads/javafx-sdk-19/lib/"
+module_path="/usr/local/lib/javafx/"
 modules="javafx.controls,javafx.fxml"
 main_class="dev.cnpuvache.gba.tile_manager.StartUp"
 # main_class="dev.cnpuvache.gba.tile_manager.Test"

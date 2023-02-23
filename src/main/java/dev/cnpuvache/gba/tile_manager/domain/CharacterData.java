@@ -1,22 +1,22 @@
 package dev.cnpuvache.gba.tile_manager.domain;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import javafx.util.Pair;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Block of 16KBytes managing the Tile data of a background.
@@ -24,26 +24,14 @@ import java.util.regex.Pattern;
  */
 public class CharacterData {
 
-    private final List<Tile> tiles;
+    @JsonDeserialize(using = CharacterData.CharacterDataTilesMapDeserializer.class)
+    protected final List<Tile> tiles;
 
-    private final boolean colorsNotPalettes;
-
-    public CharacterData(boolean colorsNotPalettes) {
-        this.tiles = new ArrayList<>();
-        this.colorsNotPalettes = colorsNotPalettes;
+    public CharacterData(@JsonProperty("tiles") List<Tile> tiles) {
+        this.tiles = Objects.requireNonNullElseGet(tiles, ArrayList::new);
     }
 
-    @JsonCreator
-    private CharacterData(@JsonProperty("colorsNotPalettes") boolean colorsNotPalettes, @JsonProperty("tiles") List<Tile> tiles) {
-        this.tiles = tiles;
-        this.colorsNotPalettes = colorsNotPalettes;
-    }
-
-    public List<Tile> getTiles() {
-        return tiles;
-    }
-
-    public void addTile(Tile tile) {
+    public void setTile(Tile tile) {
         if (tiles.size() == 512) {
             throw new IndexOutOfBoundsException("CharacterData is full. No more tiles can be added.");
         }
@@ -54,24 +42,32 @@ public class CharacterData {
         return tiles.get(index);
     }
 
-    public void setTile(int index, Tile tile) {
-        if (index < 0 || index > 511) {
-            throw new IllegalArgumentException("Index out of bounds for setting a tile in character data.");
+    public int moveTileUp(String name) {
+        int index = getTileIndex(name);
+        if (index <= 0) {
+            return -1;
         }
-        tiles.set(index, tile);
+        Collections.swap(tiles, index, index - 1);
+        return index;
     }
 
-    public void addC(String c) {
-        Tile tile = Tile.fromC(c, colorsNotPalettes);
-        addTile(tile);
+    public int moveTileDown(String name) {
+        int index = getTileIndex(name);
+        if (index == tiles.size() - 1 || index == -1) {
+            return -1;
+        }
+        Collections.swap(tiles, index, index + 1);
+        return index;
     }
 
-    public static CharacterData fromC(String contents, boolean colorsNotPalettes) throws IOException {
-        CharacterData characterData = new CharacterData(colorsNotPalettes);
-        Pattern pattern = Pattern.compile("\\{\\s(0x[\\da-fA-F]{4},\\s){15}0x[\\da-fA-F]{4}\\s\\}");
-        Matcher matcher = pattern.matcher(contents);
-        matcher.results().forEach(c-> characterData.addC(c.group()));
-        return characterData;
+    public Tile getTile(String name) {
+        if (name == null) {
+            return null;
+        }
+        return tiles.stream()
+                .filter(t -> name.equals(t.getName()))
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
@@ -79,71 +75,39 @@ public class CharacterData {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CharacterData that = (CharacterData) o;
-        return colorsNotPalettes == that.colorsNotPalettes && tiles.equals(that.tiles);
+        return tiles.equals(that.tiles);
     }
 
-    public ByteBuffer toC() {
-        ByteBuffer buffer = ByteBuffer.allocate(tiles.size() * 32);
-        for (Tile tile : tiles) {
-            buffer.put(tile.toC().array());
+    public int getTileIndex(String name) {
+        if (name == null) {
+            return -1;
         }
-        return buffer;
-    }
-
-    public boolean removeTile(String tileName) {
-        Tile tile = tiles.stream()
-                .filter(Objects::nonNull)
-                .filter(t -> Objects.nonNull(t.getName()))
-                .filter(t -> t.getName().equals(tileName))
-                .findFirst()
-                .orElse(null);
-        if (tile == null) return false;
-        return tiles.remove(tile);
-    }
-
-    public void renameTile(String oldName, String newName) {
-        Tile tile = tiles.stream()
-                .filter(t -> t.getName().equals(oldName))
-                .findFirst().orElse(null);
-        if (tile == null) return;
-        tile.setName(newName);
-    }
-
-    public void moveTileUp(String tileName) {
-        Tile tile = tiles.stream()
-                .filter(Objects::nonNull)
-                .filter(t -> Objects.nonNull(t.getName()))
-                .filter(t -> t.getName().equals(tileName))
-                .findFirst()
-                .orElse(null);
-        if (tile == null) {
-            System.out.printf("Tile with name %s not found in character data.", tileName);
-            return;
+        for (int index = 0; index < tiles.size(); index++) {
+            if (name.equals(tiles.get(index).getName())) {
+                return index;
+            }
         }
-        System.out.println(tile);
-        int index = tiles.indexOf(tile);
-        if (index == 0) {
-            System.out.println("Tile has index 0 so can't be moved up.");
-            return;
-        }
-        System.out.println("Swapping...");
-        Collections.swap(tiles, index, index - 1);
+        return -1;
     }
 
-    public void moveTileDown(String tileName) {
-        Tile tile = tiles.stream()
-                .filter(Objects::nonNull)
-                .filter(t -> Objects.nonNull(t.getName()))
-                .filter(t -> t.getName().equals(tileName))
-                .findFirst()
-                .orElse(null);
-        if (tile == null) {
-            System.out.printf("Tile with name %s not found in character data.", tileName);
-            return;
+    public int removeTile(String tileName) {
+        if (tileName == null) {
+            return -1;
         }
-        int index = tiles.indexOf(tile);
-        if (index + 1 == tiles.size()) return;
-        Collections.swap(tiles, index, index + 1);
+        int index = getTileIndex(tileName);
+        if (index == -1) {
+            return -1;
+        }
+        tiles.remove(index);
+        return index;
+    }
+
+    public void addTile(String name) {
+        if (tiles.size() == 512) {
+            throw new IndexOutOfBoundsException("CharacterData is full. No more tiles can be added.");
+        }
+        Tile tile = new Tile(name, null);
+        tiles.add(tile);
     }
 
     public static final class Serializer extends StdSerializer<CharacterData> {
@@ -155,7 +119,6 @@ public class CharacterData {
         @Override
         public void serialize(CharacterData characterData, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
             jsonGenerator.writeStartObject();
-            jsonGenerator.writeBooleanField("colorsNotPalettes", characterData.colorsNotPalettes);
             jsonGenerator.writeFieldName("tiles");
             jsonGenerator.writeStartArray();
             for (Tile tile : characterData.tiles) {
@@ -175,13 +138,39 @@ public class CharacterData {
         @Override
         public CharacterData deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
             JsonNode node = jsonParser.getCodec().readTree(jsonParser);
-            boolean colorsNotPalettes = node.get("colorsNotPalettes").asBoolean();
-            List<Tile> tiles = new ArrayList<>();
             Iterator<JsonNode> it = node.get("tiles").elements();
             ObjectMapper mapper = new ObjectMapper();
-            while (it.hasNext()) tiles.add(mapper.treeToValue(it.next(), Tile.class));
-            CharacterData characterData = new CharacterData(colorsNotPalettes, tiles);
-            return characterData;
+
+            List<Tile> tiles = new ArrayList<>();
+            while (it.hasNext()) {
+                JsonNode tileNode = it.next();
+                Tile tile = mapper.treeToValue(tileNode, Tile.class);
+                tiles.add(tile);
+            }
+            return new CharacterData(tiles);
+        }
+    }
+
+    private static final class CharacterDataTilesMapDeserializer extends StdDeserializer<List<Tile>> {
+
+        CharacterDataTilesMapDeserializer() {
+            super(List.class);
+        }
+
+        @Override
+        public List<Tile> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
+            List<Tile> ret = new ArrayList<>();
+            TreeNode node = jsonParser.getCodec().readTree(jsonParser);
+            ObjectMapper mapper = new ObjectMapper();
+
+            if (node.isArray()) {
+                for (JsonNode n : (ArrayNode)node) {
+                    Tile tile = mapper.treeToValue(n, Tile.class);
+                    ret.add(tile);
+                }
+            }
+
+            return ret;
         }
     }
 

@@ -5,14 +5,6 @@
  */
 package dev.cnpuvache.gba.tile_manager.domain;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.Arrays;
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,6 +18,11 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import javafx.scene.paint.Color;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 /**
  *
  * @author Reznov
@@ -35,6 +32,8 @@ public class RGB15 {
     private int r, g, b;
     @JsonIgnore
     private transient Color color;
+
+    public static final RGB15 DEFAULT = new RGB15(0, 0, 0);
 
     @JsonCreator
     public RGB15(

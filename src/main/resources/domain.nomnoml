@@ -1,0 +1,90 @@
+[ProjectController |
+	setColor(boolean backgroudNotColor, int paletteNumber, int index, int r, int g, int b)
+    setTile(int backgroundNumber, String name, int\[\] tileData)
+    removeTile(int backgroundNumber, String name)
+    setEntry(String screenName, int backgroundNumber, String tileName, int x, int y, boolean hFlip, boolean vFlip, int paletteNumber)
+    setObjectAttributes(String object, int x, int y, int tileNumber, int paletteNumber, int priority)
+]->1[Project]
+
+[Project |
+	List<Screen> screens
+  	List<CharacterData> characterBlocks
+    List<Palette> palettes
+    List<ObjectAttributes> objects
+	|
+    setColor(boolean backgroundNotObjectAttributes, int paletteNumber, int index, RGB15 color)
+    setTile(int backgroundNumber, Tile tile)
+    removeTile(int backgroundNumber, String name)
+    setEntry(String screenName, int backgroundNumber, int x, int y, ScreenEntry entry)
+    setObjectAttributes(String object, ObjectAttributes object)
+]
+
+[Tile |
+    name : String
+	tileData : int\[\]
+]
+
+[Project]->2[Palette]
+[Project]->5[CharacterData]
+[Project]->*[Screen]
+[Project]->0..128[ObjectAttributes]
+
+[Palette]->0..256[RGB15]
+
+[Palette |
+	List<RGB15> colors
+	|
+	setColor(int paletteNumber, int index, RGB15 color)
+]
+
+[RGB15 |
+	r : int
+    g : int
+    b : int
+]
+
+[CharacterData]->*[Tile]
+
+[CharacterData |
+	tiles : List<Tile>
+	|
+    setTile(tile : Tile)
+    removeTile(tile : Tile)
+]
+
+[Screen]->4[ScreenData]
+
+[Screen |
+	String name
+	List<ScreenData> screenBlocks
+	|
+    removeTile(tile : Tile) // remove and decrease
+    setEntry(int backgroundNumber, int x, int y, ScreenEntry entry)
+]
+
+[ScreenData |
+	entries : Map<Integer, Map<Integer, ScreenEntry>
+	|
+    removeTile(Tile tile) // remove and decrease
+    setEntry(int x, int y, ScreenEntry entry)
+]
+
+[ScreenData]->*[ScreenEntry]
+
+[ScreenEntry |
+	tileNumber : int
+    horizontalFlip : boolean
+    verticalFlip : boolean
+    paletteNumber : int
+]
+
+[ObjectAttributes |
+    name : String
+    x : int
+    y : int
+    tileNumber : int
+    paletteNumber : int
+    priority : int
+    |
+    setObjectAttributes(ObjectAttributes object)
+]

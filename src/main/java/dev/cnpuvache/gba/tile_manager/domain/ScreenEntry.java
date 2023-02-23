@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
-import java.util.Objects;
 
 public class ScreenEntry {
 

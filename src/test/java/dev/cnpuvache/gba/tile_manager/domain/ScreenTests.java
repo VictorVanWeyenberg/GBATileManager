@@ -8,9 +8,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ScreenDataTests {
+public class ScreenTests {
 
-    private ScreenData screenData;
+    private Screen screen;
 
     @BeforeEach
     public void setup() {
@@ -18,11 +18,11 @@ public class ScreenDataTests {
         ScreenEntry screenEntry2 = new ScreenEntry(86, false, true, 0);
         ScreenEntry screenEntry3 = new ScreenEntry(61, true, false, 1);
         ScreenEntry screenEntry4 = new ScreenEntry(24, true, true, 2);
-        screenData = new ScreenData(0, 0);
-        screenData.setEntry(4, 7, screenEntry1);
-        screenData.setEntry(4, 8, screenEntry2);
-        screenData.setEntry(9, 7, screenEntry3);
-        screenData.setEntry(4, 15, screenEntry4);
+        screen = new Screen(new int[] {3, 2, 1, 0});
+        screen.setEntry(0, 4,7, screenEntry1);
+        screen.setEntry(1, 4,8, screenEntry2);
+        screen.setEntry(2, 9,7, screenEntry3);
+        screen.setEntry(3, 4,15, screenEntry4);
     }
 
     @Test
@@ -33,13 +33,15 @@ public class ScreenDataTests {
         module.addDeserializer(ScreenEntry.class, new ScreenEntry.Deserializer());
         module.addSerializer(ScreenData.class, new ScreenData.Serializer());
         module.addDeserializer(ScreenData.class, new ScreenData.Deserializer());
+        module.addSerializer(Screen.class, new Screen.Serializer());
+        module.addDeserializer(Screen.class, new Screen.Deserializer());
         mapper.registerModule(module);
 
-        String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(screenData);
+        String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(screen);
         System.out.println(json);
 
-        ScreenData parsedScreenData = mapper.readValue(json, ScreenData.class);
-        assertEquals(screenData, parsedScreenData);
+        Screen parsedScreen = mapper.readValue(json, Screen.class);
+        assertEquals(screen, parsedScreen);
     }
 
 }
