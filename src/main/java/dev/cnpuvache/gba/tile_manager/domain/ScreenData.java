@@ -45,6 +45,7 @@ public class ScreenData {
         } else {
             this.data = data;
         }
+        this.characterDataIndex = characterDataIndex;
     }
 
     public int getWidth() {
@@ -83,6 +84,7 @@ public class ScreenData {
             for (Map.Entry<Integer, ScreenEntry> cell : row.getValue().entrySet()) {
                 ScreenEntry entry = cell.getValue();
                 if (entry.getTileNumber() == tileNumber) {
+                    // TODO: remove all constructors after adding the setters.
                     data.get(row.getKey()).put(cell.getKey(), new ScreenEntry(0, false, false, 0));
                 } else if (entry.getTileNumber() > tileNumber) {
                     data.get(row.getKey()).put(cell.getKey(), new ScreenEntry(entry.getTileNumber() - 1, entry.isHorizontalFlip(), entry.isVerticalFlip(), entry.getPaletteNumber()));

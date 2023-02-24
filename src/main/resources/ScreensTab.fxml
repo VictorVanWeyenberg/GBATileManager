@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-
 <?import javafx.scene.canvas.Canvas?>
-<SplitPane
-        dividerPositions="0.2"
-        xmlns="http://javafx.com/javafx"
-        xmlns:fx="http://javafx.com/fxml"
-        fx:controller="dev.cnpuvache.gba.tile_manager.gui.ScreensTabController">
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<SplitPane dividerPositions="0.2" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.cnpuvache.gba.tile_manager.gui.ScreensTabController">
     <items>
         <Accordion>
             <panes>
@@ -18,14 +27,14 @@
                             <children>
                                 <HBox fillHeight="false" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="5.0">
                                     <children>
-                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="-" HBox.hgrow="ALWAYS" />
-                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="+" HBox.hgrow="ALWAYS" />
-                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="↓" HBox.hgrow="ALWAYS" />
-                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="↑" HBox.hgrow="ALWAYS" />
+                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#removeScreenButtonOnAction" text="-" HBox.hgrow="ALWAYS" />
+                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#addScreenButtonOnAction" text="+" HBox.hgrow="ALWAYS" />
+                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#moveScreenDownButtonOnAction" text="↓" HBox.hgrow="ALWAYS" />
+                                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#moveScreenUpButtonOnAction" text="↑" HBox.hgrow="ALWAYS" />
                                     </children>
                                 </HBox>
-                                <Label text="errorLabel" textFill="RED" />
-                                <ListView maxHeight="1.7976931348623157E308" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                <Label fx:id="errorLabel" text="errorLabel" textFill="RED" />
+                                <ListView fx:id="screensListView" maxHeight="1.7976931348623157E308" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                             </children>
                         </VBox>
                     </content>
@@ -48,12 +57,13 @@
                                     <children>
                                         <Label text="Background" />
                                         <Label text="Character data" GridPane.rowIndex="1" />
-                                        <ChoiceBox maxWidth="1.7976931348623157E308" prefWidth="150.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
-                                        <ChoiceBox maxWidth="1.7976931348623157E308" prefWidth="150.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
+                                        <ChoiceBox fx:id="backgroundChoiceBox" maxWidth="1.7976931348623157E308" prefWidth="150.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
+                                        <ChoiceBox fx:id="characterDataBlockChoiceBox" maxWidth="1.7976931348623157E308" prefWidth="150.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" />
                                         <Label text="Palette" GridPane.rowIndex="2" />
-                                        <Slider blockIncrement="1.0" majorTickUnit="5.0" max="15.0" maxWidth="1.7976931348623157E308" minorTickCount="4" showTickMarks="true" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" />
-                                        <CheckBox mnemonicParsing="false" text="H-Flip" GridPane.rowIndex="3" />
-                                        <CheckBox mnemonicParsing="false" text="V-Flip" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                        <Slider fx:id="paletteNumberSlider" blockIncrement="1.0" majorTickUnit="5.0" max="15.0" maxWidth="1.7976931348623157E308" minorTickCount="4" showTickMarks="true" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="2" />
+                                        <CheckBox fx:id="horizontalFlipCheckBox" mnemonicParsing="false" text="H-Flip" GridPane.rowIndex="3" />
+                                        <CheckBox fx:id="verticalFlipChoiceBox" mnemonicParsing="false" text="V-Flip" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                        <CheckBox fx:id="showGridsCheckBox" mnemonicParsing="false" text="Show grids" GridPane.rowIndex="4" />
                                     </children>
                                 </GridPane>
                             </children>
@@ -64,14 +74,14 @@
         </Accordion>
         <SplitPane dividerPositions="0.1" orientation="VERTICAL" prefHeight="200.0" prefWidth="200.0">
             <items>
-                <Pane prefHeight="200.0" prefWidth="200.0">
+                <Pane fx:id="tilesCanvasPane" prefHeight="200.0" prefWidth="200.0">
                     <children>
-                        <Canvas height="200.0" width="200.0" />
+                        <Canvas fx:id="tilesCanvas" height="200.0" onMouseClicked="#tilesCanvasOnMouseClicked" width="200.0" />
                     </children>
                 </Pane>
-                <Pane prefHeight="200.0" prefWidth="200.0">
+                <Pane fx:id="screenCanvasPane" prefHeight="200.0" prefWidth="200.0">
                     <children>
-                        <Canvas height="200.0" width="200.0" />
+                        <Canvas fx:id="screenCanvas" height="200.0" onMouseClicked="#screenCanvasOnMouseClicked" width="200.0" />
                     </children>
                 </Pane>
             </items>

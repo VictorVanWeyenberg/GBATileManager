@@ -15,10 +15,11 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Objects;
 
-public class Tile {
+public class Tile implements Cloneable {
 
+    public static final Tile DEFAULT = new Tile("Default", null);
     private String name;
-    private final int[] tileData;
+    private int[] tileData;
 
     @JsonCreator
     public Tile(@JsonProperty("name") String name, @JsonProperty("tileData") int[] tileData) {
@@ -84,6 +85,18 @@ public class Tile {
         if (o == null || getClass() != o.getClass()) return false;
         Tile tile = (Tile) o;
         return name.equals(tile.name) && Arrays.equals(tileData, tile.tileData);
+    }
+
+    @Override
+    public Tile clone() {
+        try {
+            Tile clone = (Tile) super.clone();
+            clone.setName(this.getName());
+            clone.tileData = this.tileData.clone();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 
     public static final class Serializer extends StdSerializer<Tile> {

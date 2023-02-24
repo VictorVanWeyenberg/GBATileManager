@@ -23,7 +23,7 @@ public class ProjectTests {
         ScreenEntry screenEntry2 = new ScreenEntry(86, false, true, 0);
         ScreenEntry screenEntry3 = new ScreenEntry(61, true, false, 1);
         ScreenEntry screenEntry4 = new ScreenEntry(24, true, true, 2);
-        Screen screen = new Screen(new int[] {3, 2, 1, 0});
+        Screen screen = new Screen("screen", new int[] {3, 2, 1, 0});
         screen.setEntry(0, 4,7, screenEntry1);
         screen.setEntry(1, 4,8, screenEntry2);
         screen.setEntry(2, 9,7, screenEntry3);
@@ -65,8 +65,8 @@ public class ProjectTests {
         ObjectAttributes objectAttributes1 = new ObjectAttributes(10, 20, 300, 4, 2);
         ObjectAttributes objectAttributes2 = new ObjectAttributes(20, 40, 600, 8, 3);
 
-        TreeMap<String, Screen> screens = new TreeMap<>();
-        screens.put("screen1", screen);
+        List<Screen> screens = new ArrayList<>();
+        screens.add(screen);
 
         List<CharacterData> characterBlocks = new ArrayList<>();
         for (int i = 0; i < 5; i++) {

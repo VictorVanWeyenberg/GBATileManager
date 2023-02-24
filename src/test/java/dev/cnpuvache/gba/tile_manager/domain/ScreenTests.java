@@ -18,7 +18,7 @@ public class ScreenTests {
         ScreenEntry screenEntry2 = new ScreenEntry(86, false, true, 0);
         ScreenEntry screenEntry3 = new ScreenEntry(61, true, false, 1);
         ScreenEntry screenEntry4 = new ScreenEntry(24, true, true, 2);
-        screen = new Screen(new int[] {3, 2, 1, 0});
+        screen = new Screen("screen", new int[] {3, 2, 1, 0});
         screen.setEntry(0, 4,7, screenEntry1);
         screen.setEntry(1, 4,8, screenEntry2);
         screen.setEntry(2, 9,7, screenEntry3);

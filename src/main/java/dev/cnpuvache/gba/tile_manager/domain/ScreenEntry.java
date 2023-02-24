@@ -15,10 +15,10 @@ import java.io.IOException;
 
 public class ScreenEntry {
 
-    private final int tileNumber;
-    private final boolean horizontalFlip;
-    private final boolean verticalFlip;
-    private final int paletteNumber;
+    private int tileNumber;
+    private boolean horizontalFlip;
+    private boolean verticalFlip;
+    private int paletteNumber;
 
     @JsonCreator
     public ScreenEntry(@JsonProperty("tileNumber") int tileNumber,
@@ -59,6 +59,22 @@ public class ScreenEntry {
         if (o == null || getClass() != o.getClass()) return false;
         ScreenEntry that = (ScreenEntry) o;
         return tileNumber == that.tileNumber && horizontalFlip == that.horizontalFlip && verticalFlip == that.verticalFlip && paletteNumber == that.paletteNumber;
+    }
+
+    public void setPaletteNumber(int paletteNumber) {
+        this.paletteNumber = paletteNumber;
+    }
+
+    public void setHorizontalFlip(boolean horizontalFlip) {
+        this.horizontalFlip = horizontalFlip;
+    }
+
+    public void setVerticalFlip(boolean verticalFlip) {
+        this.verticalFlip = verticalFlip;
+    }
+
+    public void setTileNumber(int tileNumber) {
+        this.tileNumber = tileNumber;
     }
 
     public static final class Serializer extends StdSerializer<ScreenEntry> {

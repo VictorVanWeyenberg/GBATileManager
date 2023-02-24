@@ -49,12 +49,18 @@ public class MainSceneController {
             Project project = ProjectJsonConverter.fromJson(fis.readAllBytes());
             palettesController.setProject(project);
             tilesController.setProject(project);
+            screensController.setProject(project);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         tilesTab.selectedProperty().addListener((o, t0, t1) -> {
             if (t1) {
                 tilesController.selected();
+            }
+        });
+        screensTab.selectedProperty().addListener((o, t0, t1) -> {
+            if (t1) {
+                screensController.selected();
             }
         });
     }

@@ -95,6 +95,7 @@ public class TilesTabController {
 
     @FXML
     void initialize() {
+        // TODO: copy a tile
         setError(null);
         this.paletteCtx = paletteCanvas.getGraphicsContext2D();
         this.tileCtx = tileCanvas.getGraphicsContext2D();

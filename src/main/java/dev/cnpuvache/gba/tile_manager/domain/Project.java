@@ -18,7 +18,7 @@ public class Project {
 
     private final String name;
     private final int[] screenSizes;
-    private final TreeMap<String, Screen> screens;
+    private final List<Screen> screens;
     private final List<CharacterData> characterBlocks;
     private final List<Palette> palettes;
     private final TreeMap<String, ObjectAttributes> objects;
@@ -26,7 +26,7 @@ public class Project {
     public Project(String name, int[] screenSizes) {
         this.name = name;
         this.screenSizes = screenSizes;
-        this.screens = new TreeMap<>();
+        this.screens = new ArrayList<>();
 
         this.characterBlocks = new ArrayList<>();
         for (int characterBlockIndex = 0; characterBlockIndex < 5; characterBlockIndex++) {
@@ -45,7 +45,7 @@ public class Project {
     Project(
             @JsonProperty("name") String name,
             @JsonProperty("screenSizes") int[] screenSizes,
-            @JsonProperty("screens") TreeMap<String, Screen> screens,
+            @JsonProperty("screens") List<Screen> screens,
             @JsonProperty("characterBlocks") List<CharacterData> characterBlocks,
             @JsonProperty("palettes") List<Palette> palettes,
             @JsonProperty("objects") TreeMap<String, ObjectAttributes> objects
@@ -94,7 +94,7 @@ public class Project {
             throw new IllegalArgumentException("Background number must be [0:3] or 4 for object tiles.");
         }
         int tileIndex = characterBlocks.get(backgroundNumber).removeTile(tileName);
-        for (Screen screen : screens.values()) {
+        for (Screen screen : screens) {
             screen.removeTile(backgroundNumber, tileIndex);
         }
     }
@@ -107,7 +107,7 @@ public class Project {
         if (tileIndex < 0) {
             return;
         }
-        for (Screen screen : screens.values()) {
+        for (Screen screen : screens) {
             screen.moveTileUp(characterBlockIndex, tileIndex);
         }
     }
@@ -120,14 +120,14 @@ public class Project {
         if (tileIndex < 0) {
             return;
         }
-        for (Screen screen : screens.values()) {
+        for (Screen screen : screens) {
             screen.moveTileDown(characterBlockIndex, tileIndex);
         }
     }
 
     public void createScreen(String screenName) {
-        Screen screen = new Screen(screenSizes);
-        screens.put(screenName, screen);
+        Screen screen = new Screen(screenName, screenSizes);
+        screens.add(screen);
     }
 
     @Override
@@ -144,6 +144,30 @@ public class Project {
 
     public void addTile(int backgroundNumber, String name) {
         characterBlocks.get(backgroundNumber).addTile(name);
+    }
+
+    public List<Screen> getScreens() {
+        return screens;
+    }
+
+    public void removeScreen(Screen screen) {
+        screens.remove(screen);
+    }
+
+    public void moveScreenDown(Screen screen) {
+        int index = screens.indexOf(screen);
+        if (index == screens.size() - 1 || index == -1) {
+            return;
+        }
+        Collections.swap(screens, index, index + 1);
+    }
+
+    public void moveScreenUp(Screen screen) {
+        int index = screens.indexOf(screen);
+        if (index <= 0) {
+            return;
+        }
+        Collections.swap(screens, index, index - 1);
     }
 
     public static final class Serializer extends StdSerializer<Project> {
@@ -165,11 +189,8 @@ public class Project {
             jsonGenerator.writeEndArray();
 
             jsonGenerator.writeArrayFieldStart("screens");
-            for (Map.Entry<String, Screen> screenMapEntry : project.screens.entrySet()) {
-                jsonGenerator.writeStartObject();
-                jsonGenerator.writeStringField("name", screenMapEntry.getKey());
-                jsonGenerator.writeObjectField("screen", screenMapEntry.getValue());
-                jsonGenerator.writeEndObject();
+            for (Screen screen : project.screens) {
+                jsonGenerator.writeObject(screen);
             }
             jsonGenerator.writeEndArray();
 
@@ -225,13 +246,12 @@ public class Project {
             }
             int[] screenSizes = screenSizesList.stream().mapToInt(i -> i).toArray();
 
-            TreeMap<String, Screen> screens = new TreeMap<>();
+            List<Screen> screens = new ArrayList<>();
             Iterator<JsonNode> screenEntries = node.get("screens").elements();
             while (screenEntries.hasNext()) {
                 JsonNode screenEntry = screenEntries.next();
-                String name = screenEntry.get("name").asText();
-                Screen screen = mapper.treeToValue(screenEntry.get("screen"), Screen.class);
-                screens.put(name, screen);
+                Screen screen = mapper.treeToValue(screenEntry, Screen.class);
+                screens.add(screen);
             }
 
             List<CharacterData> characterBlocks = new ArrayList<>();

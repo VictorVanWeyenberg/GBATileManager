@@ -20,9 +20,11 @@ import java.util.List;
 
 public class Screen {
 
+    private String name;
+
     private final List<ScreenData> screenBlocks;
 
-    public Screen(int[] screenSizes) {
+    public Screen(String name, int[] screenSizes) {
         if (screenSizes.length != 4) {
             throw new IllegalArgumentException("Four screen sizes must be passed.");
         }
@@ -30,10 +32,11 @@ public class Screen {
         for (int index = 0; index < 4; index++) {
             screenBlocks.add(new ScreenData(screenSizes[index], index));
         }
+        this.name = name;
     }
 
     @JsonCreator
-    public Screen(@JsonProperty("screenBlocks") List<ScreenData> screenBlocks) {
+    public Screen(@JsonProperty("name") String name, @JsonProperty("screenBlocks") List<ScreenData> screenBlocks) {
         if (screenBlocks == null) {
             throw new IllegalArgumentException("Screen blocks is null.");
         }
@@ -41,6 +44,37 @@ public class Screen {
             throw new IllegalArgumentException("Screen blocks must have size of 4.");
         }
         this.screenBlocks = screenBlocks;
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getCharacterBlockIndexOfScreenDataIndex(int screenDataIndex) {
+        if (screenDataIndex < 0 || screenDataIndex > 3) {
+            throw new IllegalArgumentException("Screen data index must be in range of [0:3].");
+        }
+        return screenBlocks.get(screenDataIndex).getCharacterDataIndex();
+    }
+
+    public void setCharacterBlockIndexOfScreenDataIndex(int screenDataIndex, int characterDataIndex) {
+        if (screenDataIndex < 0 || screenDataIndex > 3) {
+            throw new IllegalArgumentException("Screen data index must be in range of [0:3].");
+        }
+        screenBlocks.get(screenDataIndex).setCharacterDataIndex(characterDataIndex);
+    }
+
+    public ScreenEntry getEntry(int backgroundNumber, int x, int y) {
+        ScreenData screenData = screenBlocks.get(backgroundNumber);
+        if (screenData == null) {
+            return null;
+        }
+        return screenData.getEntry(x, y);
     }
 
     public void setEntry(int backgroundNumber, int x, int y, ScreenEntry entry) {
@@ -84,7 +118,7 @@ public class Screen {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Screen screen = (Screen) o;
-        return screenBlocks.equals(screen.screenBlocks);
+        return name.equals(screen.name) && screenBlocks.equals(screen.screenBlocks);
     }
 
     public static final class Serializer extends StdSerializer<Screen> {
@@ -96,6 +130,7 @@ public class Screen {
         @Override
         public void serialize(Screen screen, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
             jsonGenerator.writeStartObject();
+            jsonGenerator.writeStringField("name", screen.name);
             jsonGenerator.writeArrayFieldStart("screenBlocks");
             for (ScreenData screenData : screen.screenBlocks) {
                 jsonGenerator.writeObject(screenData);
@@ -114,6 +149,7 @@ public class Screen {
         @Override
         public Screen deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
             JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+            String name = node.get("name").asText();
             ObjectMapper mapper = new ObjectMapper();
             Iterator<JsonNode> screenBlocksIterator = node.get("screenBlocks").elements();
             List<ScreenData> screenBlocks = new ArrayList<>();
@@ -124,7 +160,7 @@ public class Screen {
                     throw new RuntimeException(e);
                 }
             });
-            return new Screen(screenBlocks);
+            return new Screen(name, screenBlocks);
         }
     }
 
