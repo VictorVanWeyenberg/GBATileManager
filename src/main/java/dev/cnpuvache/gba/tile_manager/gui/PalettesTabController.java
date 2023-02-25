@@ -226,6 +226,9 @@ public class PalettesTabController {
     }
 
     private void draw() {
+        if (project == null) {
+            return;
+        }
         double canvasSize = canvas.getWidth();
         double colorSize = canvasSize / 4;
         PaletteMode mode = paletteMode.getValue();

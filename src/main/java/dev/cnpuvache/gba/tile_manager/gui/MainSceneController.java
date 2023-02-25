@@ -1,6 +1,8 @@
 package dev.cnpuvache.gba.tile_manager.gui;
 
 import dev.cnpuvache.gba.tile_manager.domain.Project;
+import dev.cnpuvache.gba.tile_manager.persistence.CachingManager;
+import dev.cnpuvache.gba.tile_manager.persistence.FileManager;
 import dev.cnpuvache.gba.tile_manager.util.ProjectJsonConverter;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -13,6 +15,7 @@ import javafx.scene.control.TabPane;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Optional;
 
 public class MainSceneController {
 
@@ -44,14 +47,12 @@ public class MainSceneController {
 
     @FXML
     void initialize() {
-        File file = new File("/home/cnpuvache/Desktop/GrooveBoy.gbaproj");
-        try (FileInputStream fis = new FileInputStream(file)) {
-            Project project = ProjectJsonConverter.fromJson(fis.readAllBytes());
-            palettesController.setProject(project);
-            tilesController.setProject(project);
-            screensController.setProject(project);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        File file = CachingManager.getInstance().getLatestOpenedProject();
+        if (file != null) {
+            Optional<Project> optionalProject = FileManager.getInstance().openProject(file);
+            setProject(optionalProject.get());
+        } else {
+            setProject(null);
         }
         tilesTab.selectedProperty().addListener((o, t0, t1) -> {
             if (t1) {
@@ -63,6 +64,24 @@ public class MainSceneController {
                 screensController.selected();
             }
         });
+        menuBarController.setNewProjectConsumer(this::setProject);
+    }
+
+    private void setProject(Project project) {
+        if (project == null) {
+            palettesTab.setDisable(true);
+            tilesTab.setDisable(true);
+            screensTab.setDisable(true);
+            objectsTab.setDisable(true);
+            return;
+        }
+        palettesTab.setDisable(false);
+        tilesTab.setDisable(false);
+        screensTab.setDisable(false);
+        objectsTab.setDisable(false);
+        palettesController.setProject(project);
+        tilesController.setProject(project);
+        screensController.setProject(project);
     }
 
 }
