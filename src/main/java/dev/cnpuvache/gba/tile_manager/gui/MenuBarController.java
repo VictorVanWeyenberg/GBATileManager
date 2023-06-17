@@ -49,4 +49,9 @@
             FileManager.getInstance().saveProject();
         }
 
+        @FXML
+        void buildMenuItemOnAction(ActionEvent event) {
+            FileManager.getInstance().buildProject();
+        }
+
     }

@@ -1,10 +1,12 @@
 package dev.cnpuvache.gba.tile_manager.persistence;
 
+import dev.cnpuvache.gba.tile_manager.binary.ProjectToBinary;
 import dev.cnpuvache.gba.tile_manager.domain.Project;
 import dev.cnpuvache.gba.tile_manager.util.ProjectJsonConverter;
 
 import java.io.*;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Optional;
 
 public class FileManager {
@@ -62,4 +64,30 @@ public class FileManager {
         }
     }
 
+    public void buildProject() {
+        if (managingProject == null || managingFile == null) {
+            System.out.println("Cannot build null project.");
+            return;
+        }
+        File binariesDirectory = new File(managingFile, "bin");
+        if (!binariesDirectory.exists() && !binariesDirectory.mkdirs()) {
+            System.out.println("Cannot create bin directory.");
+            return;
+        }
+        if (binariesDirectory.exists() && binariesDirectory.listFiles().length > 0) {
+            for (File contentFile : binariesDirectory.listFiles()) {
+                contentFile.delete();
+            }
+        }
+        for (Map.Entry<String, byte[]> binaryEntry : ProjectToBinary.convert(managingProject).entrySet()) {
+            File outputFile = new File(binariesDirectory, binaryEntry.getKey());
+            try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+                fos.write(binaryEntry.getValue());
+                fos.flush();
+                System.out.println("Written " + outputFile);
+            } catch (IOException e) {
+                System.out.println("Unable to write " + binaryEntry.getKey());
+            }
+        }
+    }
 }

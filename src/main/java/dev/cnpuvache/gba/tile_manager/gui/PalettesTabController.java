@@ -240,6 +240,12 @@ public class PalettesTabController {
         }
         int paletteNumber = (int) paletteNumberSlider.getValue();
         RGB15[] colors = palette.getPalette(paletteNumber);
+
+        ctx.setFill(Color.BLACK);
+        ctx.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        ctx.setFill(project.getBackgroundPalette().getPalette(0)[0].getColor());
+        ctx.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+
         for (int index = 0; index < colors.length; index++) {
             RGB15 color = colors[index];
             ctx.setFill(color.getColor());

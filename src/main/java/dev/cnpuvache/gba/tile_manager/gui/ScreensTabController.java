@@ -314,6 +314,20 @@ public class ScreensTabController {
 
         selectedBackgroundTileIndex = y * 30 + x;
 
+        Backgrounds background = backgroundChoiceBox.getValue();
+        ScreenEntry entry = screen.getEntry(background.index, x, y);
+        if (entry == null) {
+            entry = new ScreenEntry(
+                    selectedTileIndex,
+                    horizontalFlipCheckBox.isSelected(),
+                    verticalFlipChoiceBox.isSelected(),
+                    (int) paletteNumberSlider.getValue()
+            );
+            screen.setEntry(background.index, x, y, entry);
+        } else {
+            entry.setTileNumber(selectedTileIndex);
+        }
+
         updateEditPane();
         draw();
     }
@@ -341,22 +355,6 @@ public class ScreensTabController {
         }
         selectedTileIndex = index;
 
-        x = selectedBackgroundTileIndex % 30;
-        y = selectedBackgroundTileIndex / 30;
-
-        ScreenEntry entry = screen.getEntry(background.index, x, y);
-        if (entry == null) {
-            entry = new ScreenEntry(
-                    selectedTileIndex,
-                    horizontalFlipCheckBox.isSelected(),
-                    verticalFlipChoiceBox.isSelected(),
-                    (int) paletteNumberSlider.getValue()
-            );
-            screen.setEntry(background.index, x, y, entry);
-        } else {
-            entry.setTileNumber(selectedTileIndex);
-        }
-
         draw();
     }
 
@@ -372,12 +370,12 @@ public class ScreensTabController {
         int y = selectedBackgroundTileIndex / 30;
         ScreenEntry entry = screen.getEntry(backgrounds.index, x, y);
         if (entry == null) {
-            selectedTileIndex = 0;
+            // selectedTileIndex = 0;
             horizontalFlipCheckBox.setSelected(false);
             verticalFlipChoiceBox.setSelected(false);
             paletteNumberSlider.setValue(0);
         } else {
-            selectedTileIndex = entry.getTileNumber();
+            // selectedTileIndex = entry.getTileNumber();
             horizontalFlipCheckBox.setSelected(entry.isHorizontalFlip());
             verticalFlipChoiceBox.setSelected(entry.isVerticalFlip());
             paletteNumberSlider.setValue(entry.getPaletteNumber());
@@ -419,6 +417,12 @@ public class ScreensTabController {
         if (colors == null) {
             return;
         }
+
+        tilesCtx.setFill(Color.BLACK);
+        tilesCtx.fillRect(0, 0, tilesCanvas.getWidth(), tilesCanvas.getHeight());
+        tilesCtx.setFill(project.getBackgroundPalette().getPalette(0)[0].getColor());
+        tilesCtx.fillRect(0, 0, tilesCanvas.getWidth(), tilesCanvas.getHeight());
+
         int x = 0;
         int y = 0;
         int index = 0;
@@ -500,6 +504,8 @@ public class ScreensTabController {
             return;
         }
 
+        screenCtx.setFill(Color.BLACK);
+        screenCtx.fillRect(0, 0, screenCanvas.getWidth(), screenCanvas.getHeight());
         screenCtx.setFill(project.getBackgroundPalette().getPalette(0)[0].getColor());
         screenCtx.fillRect(0, 0, screenCanvas.getWidth(), screenCanvas.getHeight());
 

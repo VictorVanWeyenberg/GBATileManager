@@ -273,6 +273,12 @@ public class TilesTabController {
         }
         RGB15[] colors = palette.getPalette(paletteNumber);
         double paletteColorSize = Math.min(PALETTE_COLOR_SIZE, paletteCanvas.getHeight());
+
+        paletteCtx.setFill(Color.BLACK);
+        paletteCtx.fillRect(0, 0, paletteCanvas.getWidth(), paletteCanvas.getHeight());
+        paletteCtx.setFill(palette.getColor(0).getColor());
+        paletteCtx.fillRect(0, 0, paletteCanvas.getWidth(), paletteCanvas.getHeight());
+
         for (int index = 0; index < colors.length; index++) {
             paletteCtx.setFill(colors[index].getColor());
             paletteCtx.fillRect(index * paletteColorSize, 0, paletteColorSize, paletteColorSize);
@@ -304,6 +310,11 @@ public class TilesTabController {
         Palette palette = getPalette();
         int paletteNumber = (int) paletteSlider.getValue();
         RGB15[] colors = palette.getPalette(paletteNumber);
+
+        tileCtx.setFill(Color.BLACK);
+        tileCtx.fillRect(0, 0, tileCanvas.getWidth(), tileCanvas.getHeight());
+        tileCtx.setFill(palette.getColor(0).getColor());
+        tileCtx.fillRect(0, 0, tileCanvas.getWidth(), tileCanvas.getHeight());
 
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {

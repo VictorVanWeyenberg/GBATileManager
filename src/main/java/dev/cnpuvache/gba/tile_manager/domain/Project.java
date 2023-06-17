@@ -138,6 +138,13 @@ public class Project {
         return Arrays.equals(screenSizes, project.screenSizes) && screens.equals(project.screens) && characterBlocks.equals(project.characterBlocks) && palettes.equals(project.palettes) && objects.equals(project.objects);
     }
 
+    public CharacterData getCharacterData(int backgroundNumber) {
+        if (backgroundNumber < 0 || backgroundNumber > characterBlocks.size() - 1) {
+            return null;
+        }
+        return characterBlocks.get(backgroundNumber);
+    }
+
     public List<Tile> getTiles(int backgroundNumber) {
         return characterBlocks.get(backgroundNumber).tiles;
     }

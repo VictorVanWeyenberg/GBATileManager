@@ -44,6 +44,9 @@ public class RGB15 {
     }
     
     public Color getColor() {
+        if (equals(DEFAULT)) {
+            return Color.TRANSPARENT;
+        }
         return color;
     }
     

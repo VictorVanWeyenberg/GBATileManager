@@ -58,8 +58,8 @@ public class TileToImageConverter {
             for (int x = 0; x < 8; x++) {
                 int paletteColor = tile.getTileData(x, y);
                 RGB15 color = colors[paletteColor];
-                int drawX = verticalFlip ? 7 - x : x;
-                int drawY = horizontalFlip ? 7 - y : y;
+                int drawX = horizontalFlip ? 7 - x : x;
+                int drawY = verticalFlip ? 7 - y : y;
                 writer.setColor(drawX, drawY, color.getColor());
             }
         }

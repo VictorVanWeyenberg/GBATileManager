@@ -69,6 +69,22 @@ public class Screen {
         screenBlocks.get(screenDataIndex).setCharacterDataIndex(characterDataIndex);
     }
 
+    public int getWidth(int backgroundNumber) {
+        ScreenData screenData = screenBlocks.get(backgroundNumber);
+        if (screenData == null) {
+            return 0;
+        }
+        return screenData.getWidth();
+    }
+
+    public int getHeight(int backgroundNumber) {
+        ScreenData screenData = screenBlocks.get(backgroundNumber);
+        if (screenData == null) {
+            return 0;
+        }
+        return screenData.getHeight();
+    }
+
     public ScreenEntry getEntry(int backgroundNumber, int x, int y) {
         ScreenData screenData = screenBlocks.get(backgroundNumber);
         if (screenData == null) {

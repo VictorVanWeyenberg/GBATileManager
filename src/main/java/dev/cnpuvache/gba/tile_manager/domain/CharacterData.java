@@ -60,6 +60,10 @@ public class CharacterData {
         return index;
     }
 
+    public List<Tile> getTiles() {
+        return tiles;
+    }
+
     public Tile getTile(String name) {
         if (name == null) {
             return null;
