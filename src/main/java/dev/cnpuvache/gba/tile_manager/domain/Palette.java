@@ -71,6 +71,10 @@ public class Palette {
         return Arrays.equals(paletteData, palette16.paletteData);
     }
 
+    public RGB15 getBackgroundColor() {
+        return paletteData[0];
+    }
+
     public static final class Serializer extends StdSerializer<Palette> {
 
         public Serializer() {

@@ -4,45 +4,36 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox
-        maxHeight="1.7976931348623157E308"
-        maxWidth="1.7976931348623157E308"
-        prefHeight="400.0"
-        prefWidth="640.0"
-        xmlns="http://javafx.com/javafx/18"
-        xmlns:fx="http://javafx.com/fxml/1"
-        fx:controller="dev.cnpuvache.gba.tile_manager.gui.MainSceneController"
->
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="dev.cnpuvache.gba.tile_manager.gui.MainSceneController">
     <children>
-        <fx:include source="MenuBar.fxml" fx:id="menuBar" />
-        <TabPane
-                accessibleRole="PARENT"
-                maxHeight="1.7976931348623157E308"
-                maxWidth="1.7976931348623157E308"
-                side="BOTTOM" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS"
-                fx:id="tabPane"
-        >
+        <fx:include fx:id="menuBar" source="MenuBar.fxml" />
+        <TabPane fx:id="tabPane" accessibleRole="PARENT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" side="BOTTOM" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
             <tabs>
-                <Tab text="Palettes" fx:id="palettesTab">
+                <Tab fx:id="palettesTab" text="Palettes">
                     <content>
-                        <fx:include source="PalettesTab.fxml" fx:id="palettes" />
+                        <fx:include fx:id="palettes" source="PalettesTab.fxml" />
                     </content>
                 </Tab>
-                <Tab text="Tiles" fx:id="tilesTab">
+                <Tab fx:id="tilesTab" text="Tiles">
                     <content>
-                        <fx:include source="TilesTab.fxml" fx:id="tiles" />
+                        <fx:include fx:id="tiles" source="TilesTab.fxml" />
                     </content>
                 </Tab>
-                <Tab text="Screens" fx:id="screensTab">
+                <Tab fx:id="screensTab" text="Screens">
                     <content>
-                        <fx:include source="ScreensTab.fxml" fx:id="screens" />
+                        <fx:include fx:id="screens" source="ScreensTab.fxml" />
                     </content>
                 </Tab>
-                <Tab text="Objects" fx:id="objectsTab">
+                <Tab fx:id="componentsTab" text="Components">
                     <content>
-                        <fx:include source="ObjectsTab.fxml" fx:id="objects" />
+                        <fx:include fx:id="components" source="ComponentsTab.fxml" />
                     </content>
                 </Tab>
+            <Tab fx:id="objectsTab" text="Objects">
+               <content>
+                  <fx:include fx:id="objects" source="ObjectsTab.fxml" />
+               </content>
+            </Tab>
             </tabs>
         </TabPane>
     </children>

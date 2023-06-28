@@ -32,6 +32,9 @@ public class MainSceneController {
     private ScreensTabController screensController;
 
     @FXML
+    private ComponentsTabController componentsController;
+
+    @FXML
     private ObjectsTabController objectsController;
 
     @FXML
@@ -44,6 +47,8 @@ public class MainSceneController {
     private Tab screensTab;
     @FXML
     private Tab objectsTab;
+    @FXML
+    private Tab componentsTab;
 
     @FXML
     void initialize() {
@@ -79,6 +84,7 @@ public class MainSceneController {
         tilesTab.setDisable(false);
         screensTab.setDisable(false);
         objectsTab.setDisable(false);
+        componentsController.setProject(project);
         palettesController.setProject(project);
         tilesController.setProject(project);
         screensController.setProject(project);

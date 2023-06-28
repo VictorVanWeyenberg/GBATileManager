@@ -75,7 +75,7 @@ public class ScreensTabController {
     private int selectedTileIndex = 0;
     private int selectedBackgroundTileIndex = 0;
 
-    private enum Backgrounds {
+    enum Backgrounds {
         BG0(0), BG1(1), BG2(2), BG3(3);
         final int index;
         private Backgrounds(int index) { this.index = index; }
@@ -405,9 +405,8 @@ public class ScreensTabController {
             setError("No screen selected.");
             return;
         }
-        Backgrounds background = backgroundChoiceBox.getValue();
-        int characterBlockIndex = screen.getCharacterBlockIndexOfScreenDataIndex(background.index);
-        List<Tile> tiles = project.getTiles(characterBlockIndex);
+        Backgrounds background = characterDataBlockChoiceBox.getValue();
+        List<Tile> tiles = project.getTiles(background.index);
         Palette palette = getPalette();
         if (palette == null) {
             return;
@@ -417,6 +416,7 @@ public class ScreensTabController {
         if (colors == null) {
             return;
         }
+        RGB15 backgroundColor = palette.getBackgroundColor();
 
         tilesCtx.setFill(Color.BLACK);
         tilesCtx.fillRect(0, 0, tilesCanvas.getWidth(), tilesCanvas.getHeight());
@@ -427,7 +427,8 @@ public class ScreensTabController {
         int y = 0;
         int index = 0;
         for (Tile tile : tiles) {
-            Image image = TileToImageConverter.tileToImage(tile, colors, false, false, paletteNumber, index);
+            TileToImageConverter.clearCache();
+            Image image = TileToImageConverter.tileToImage(tile, colors, false, false, paletteNumber, index, backgroundColor);
             tilesCtx.drawImage(image, x, y, TILE_SIZE, TILE_SIZE);
             x += TILE_SIZE;
             if (x + TILE_SIZE > tilesCanvas.getWidth()) {
@@ -449,14 +450,14 @@ public class ScreensTabController {
             }
         }
 
-        x = selectedTileIndex % TILE_SIZE;
-        y = selectedTileIndex / TILE_SIZE;
+        x = selectedTileIndex % (int) (tilesCanvas.getWidth() / TILE_SIZE);
+        y = selectedTileIndex / (int) (tilesCanvas.getWidth() / TILE_SIZE);
         tilesCtx.setStroke(Color.CYAN);
         tilesCtx.setLineWidth(3.0);
         tilesCtx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
     }
 
-    private void drawEntry(int x, int y, ScreenEntry entry) {
+    private void drawEntry(Backgrounds backgroundNumber, int x, int y, ScreenEntry entry) {
         if (project == null) {
             return;
         }
@@ -479,8 +480,7 @@ public class ScreensTabController {
 
         Palette palette = project.getBackgroundPalette();
         RGB15[] colors = palette.getPalette(paletteNumber);
-        Backgrounds characterBaseBlock = characterDataBlockChoiceBox.getValue();
-        List<Tile> tiles = project.getTiles(characterBaseBlock.index);
+        List<Tile> tiles = project.getTiles(backgroundNumber.index);
         Tile tile;
         try {
             tile = tiles.get(tileNumber);
@@ -491,8 +491,10 @@ public class ScreensTabController {
             tile = Tile.DEFAULT;
         }
 
+        RGB15 backgroundRGB15 = palette.getBackgroundColor();
         Image tileImage =
-                TileToImageConverter.tileToImage(tile, colors, horizontalFlip, verticalFlip, paletteNumber, tileNumber);
+                TileToImageConverter.tileToImage(tile, colors, horizontalFlip, verticalFlip, paletteNumber, tileNumber,
+                        backgroundRGB15);
         double tileSize = screenCanvas.getWidth() / 30;
 
         screenCtx.drawImage(tileImage, x * tileSize, y * tileSize, tileSize, tileSize);
@@ -513,10 +515,11 @@ public class ScreensTabController {
         List<Backgrounds> backgroundsByLeastPriority = Arrays.asList(Backgrounds.values());
         Collections.reverse(backgroundsByLeastPriority);
         for (Backgrounds background : backgroundsByLeastPriority) {
+            TileToImageConverter.clearCache();
             for (int y = 0; y < 20; y++) {
                 for (int x = 0; x < 30; x++) {
                     ScreenEntry entry = screen.getEntry(background.index, x, y);
-                    drawEntry(x, y, entry);
+                    drawEntry(background, x, y, entry);
                 }
             }
         }
