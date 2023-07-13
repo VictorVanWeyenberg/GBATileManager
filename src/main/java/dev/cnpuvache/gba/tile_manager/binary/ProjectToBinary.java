@@ -1,10 +1,12 @@
 package dev.cnpuvache.gba.tile_manager.binary;
 
 import dev.cnpuvache.gba.tile_manager.domain.CharacterData;
+import dev.cnpuvache.gba.tile_manager.domain.Component;
 import dev.cnpuvache.gba.tile_manager.domain.Project;
 import dev.cnpuvache.gba.tile_manager.domain.Screen;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ProjectToBinary {
@@ -13,6 +15,7 @@ public class ProjectToBinary {
     private static final String OBJECT_BINARY_FILE_NAME = "object_palette.bin";
     private static final String CHARACTER_DATA_FILE_NAME = "BG%02d_character_data.bin";
     private static final String SCREEN_DATA_FILE_NAME = "%s_BG%02d_screen_data.bin";
+    private static final String COMPONENT_DATA_FILE_NAME = "%s_component_data.bin";
 
     public static Map<String, byte[]> convert(Project project) {
         Map<String, byte[]> binaries = new HashMap<>();
@@ -27,11 +30,13 @@ public class ProjectToBinary {
             binaries.put(fileName, CharacterDataToBinary.convert(project.getCharacterData(backgroundNumber)));
         }
         for (Screen screen : project.getScreens()) {
+            String name = screen.getName();
             for (int backgroundNumber = 0; backgroundNumber < 4; backgroundNumber++) {
-                String name = screen.getName();
-                name = String.format(SCREEN_DATA_FILE_NAME, name.toLowerCase(), backgroundNumber);
-                binaries.put(name, ScreenDataToBinary.convert(screen, backgroundNumber));
+                String fileName = String.format(SCREEN_DATA_FILE_NAME, name.toLowerCase(), backgroundNumber);
+                binaries.put(fileName, ScreenDataToBinary.convert(screen, backgroundNumber));
             }
+            binaries.put(String.format(COMPONENT_DATA_FILE_NAME, name.toLowerCase()),
+                    ComponentToBinary.convert(project.getComponents(name)));
         }
         return binaries;
     }

@@ -81,7 +81,9 @@ public class ProjectTests {
         objects.put("object1", objectAttributes1);
         objects.put("object2", objectAttributes2);
 
-        project = new Project("TestProject", new int[] {2,1,3,0}, screens, characterBlocks, palettes, objects);
+        TreeMap<String, List<Component>> components = new TreeMap<>();
+
+        project = new Project("TestProject", new int[] {2,1,3,0}, screens, characterBlocks, palettes, objects, components);
     }
 
     @Test
@@ -104,6 +106,8 @@ public class ProjectTests {
         module.addDeserializer(CharacterData.class, new CharacterData.Deserializer());
         module.addSerializer(ObjectAttributes.class, new ObjectAttributes.Serializer());
         module.addDeserializer(ObjectAttributes.class, new ObjectAttributes.Deserializer());
+        module.addSerializer(Component.class, new Component.Serializer());
+        module.addDeserializer(Component.class, new Component.Deserializer());
         module.addSerializer(Project.class, new Project.Serializer());
         module.addDeserializer(Project.class, new Project.Deserializer());
         mapper.registerModule(module);

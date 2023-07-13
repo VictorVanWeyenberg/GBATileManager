@@ -9,6 +9,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import com.sun.source.tree.Tree;
+import dev.cnpuvache.gba.tile_manager.util.ComponentResolver;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +24,7 @@ public class Project {
     private final List<CharacterData> characterBlocks;
     private final List<Palette> palettes;
     private final TreeMap<String, ObjectAttributes> objects;
+    private TreeMap<String, List<Component>> components;
 
     public Project(String name, int[] screenSizes) {
         this.name = name;
@@ -39,6 +42,7 @@ public class Project {
         }
 
         this.objects = new TreeMap<>();
+        this.components = new TreeMap<>();
     }
 
     @JsonCreator
@@ -48,7 +52,8 @@ public class Project {
             @JsonProperty("screens") List<Screen> screens,
             @JsonProperty("characterBlocks") List<CharacterData> characterBlocks,
             @JsonProperty("palettes") List<Palette> palettes,
-            @JsonProperty("objects") TreeMap<String, ObjectAttributes> objects
+            @JsonProperty("objects") TreeMap<String, ObjectAttributes> objects,
+            @JsonProperty("components") TreeMap<String, List<Component>> components
     ) {
         this.name = name;
         this.screenSizes = screenSizes;
@@ -56,6 +61,7 @@ public class Project {
         this.characterBlocks = characterBlocks;
         this.palettes = palettes;
         this.objects = objects;
+        this.components = components;
     }
 
     public static Project defaultInstance() {
@@ -135,7 +141,9 @@ public class Project {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Project project = (Project) o;
-        return Arrays.equals(screenSizes, project.screenSizes) && screens.equals(project.screens) && characterBlocks.equals(project.characterBlocks) && palettes.equals(project.palettes) && objects.equals(project.objects);
+        return Arrays.equals(screenSizes, project.screenSizes) && screens.equals(project.screens) &&
+                characterBlocks.equals(project.characterBlocks) && palettes.equals(project.palettes) &&
+                objects.equals(project.objects) && components.equals(project.components);
     }
 
     public CharacterData getCharacterData(int backgroundNumber) {
@@ -175,6 +183,34 @@ public class Project {
             return;
         }
         Collections.swap(screens, index, index - 1);
+    }
+
+    public Component assignComponent(String screenName, int x1, int y1, int x2, int y2) {
+        Component component = new Component(x1, y1, x2, y2);
+        if (!components.containsKey(screenName)) {
+            components.put(screenName, new ArrayList<>());
+        }
+        components.get(screenName).add(component);
+        return component;
+    }
+
+    public void removeComponent(String screenName, int x, int y) {
+        components.get(screenName).removeIf(c -> x >= c.getBeginX() && x <= c.getEndX() && y >= c.getBeginY() && y <= c.getEndY());
+    }
+
+    public void resolveComponents(String screenName) {
+        ComponentResolver.resolve(components.get(screenName));
+    }
+
+    public void resetComponents(String screenName) {
+        components.get(screenName).forEach(Component::reset);
+    }
+
+    public List<Component> getComponents(String screenName) {
+        if (components.containsKey(screenName)) {
+            return components.get(screenName);
+        }
+        return new ArrayList<>();
     }
 
     public static final class Serializer extends StdSerializer<Project> {
@@ -218,6 +254,19 @@ public class Project {
                 jsonGenerator.writeStartObject();
                 jsonGenerator.writeStringField("name", objectsMapEntry.getKey());
                 jsonGenerator.writeObjectField("obj_attrs", objectsMapEntry.getValue());
+                jsonGenerator.writeEndObject();
+            }
+            jsonGenerator.writeEndArray();
+
+            jsonGenerator.writeArrayFieldStart("components");
+            for (Map.Entry<String, List<Component>> entry : project.components.entrySet()) {
+                jsonGenerator.writeStartObject();
+                jsonGenerator.writeStringField("screenName", entry.getKey());
+                jsonGenerator.writeArrayFieldStart("items");
+                for (Component component : entry.getValue()) {
+                    jsonGenerator.writeObject(component);
+                }
+                jsonGenerator.writeEndArray();
                 jsonGenerator.writeEndObject();
             }
             jsonGenerator.writeEndArray();
@@ -289,7 +338,20 @@ public class Project {
                 objects.put(name, objectAttributes);
             }
 
-            return new Project(projectName, screenSizes, screens, characterBlocks, palettes, objects);
+            TreeMap<String, List<Component>> components = new TreeMap<>();
+            Iterator<JsonNode> componentEntries = node.get("components").elements();
+            while (componentEntries.hasNext()) {
+                JsonNode componentEntry = componentEntries.next();
+                String screenName = componentEntry.get("screenName").asText();
+                Iterator<JsonNode> itemsIterator = componentEntry.get("items").elements();
+                List<Component> items = new ArrayList<>();
+                while (itemsIterator.hasNext()) {
+                    items.add(mapper.treeToValue(itemsIterator.next(), Component.class));
+                }
+                components.put(screenName, items);
+            }
+
+            return new Project(projectName, screenSizes, screens, characterBlocks, palettes, objects, components);
         }
     }
 

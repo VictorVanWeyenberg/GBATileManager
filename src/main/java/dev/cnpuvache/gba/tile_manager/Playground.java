@@ -24,6 +24,7 @@ public class Playground {
             System.out.println(tile);
             System.out.println();
         }
+        System.exit(0);
         File latestOpenedProject = CachingManager.getInstance().getLatestOpenedProject();
         FileManager fileManager = FileManager.getInstance();
         Optional<Project> project = fileManager.openProject(latestOpenedProject);

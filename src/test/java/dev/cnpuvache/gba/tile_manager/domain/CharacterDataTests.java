@@ -56,15 +56,14 @@ public class CharacterDataTests {
     @DisplayName("Adding a tile to characterData increases the size of the tiles map.")
     public void addingATileToCharacterDataIncreasesTheSizeOfTheTilesMap() {
         assertEquals(3, characterData.tiles.size());
-        characterData.setTile(mock(Tile.class));
+        characterData.setTile(new Tile("tile5", null));
         assertEquals(4, characterData.tiles.size());
     }
 
     @Test
     @DisplayName("Adding a tile to characterData add that actual tile with that name.")
     public void addingATileToCharacterDataAddThatActualTileWithThatName() {
-        Tile tile = mock(Tile.class);
-        doReturn("tile4").when(tile).getName();
+        Tile tile = new Tile("tile4", null);
         characterData.setTile(tile);
         assertEquals(tile, characterData.getTile("tile4"));
     }

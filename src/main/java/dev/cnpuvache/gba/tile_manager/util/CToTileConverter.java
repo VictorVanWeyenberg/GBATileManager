@@ -112,7 +112,7 @@ public class CToTileConverter {
 
     public static List<Tile> fromC() {
         List<Tile> tiles = new ArrayList<>();
-        char name = '0';
+        char name = ' ';
         for (short[] serializedTile : cTiles) {
             int index = 0;
             Tile tile = new Tile(Character.toString(name++), null);

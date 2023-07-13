@@ -29,6 +29,8 @@ public class ProjectJsonConverter {
         module.addDeserializer(CharacterData.class, new CharacterData.Deserializer());
         module.addSerializer(ObjectAttributes.class, new ObjectAttributes.Serializer());
         module.addDeserializer(ObjectAttributes.class, new ObjectAttributes.Deserializer());
+        module.addSerializer(Component.class, new Component.Serializer());
+        module.addDeserializer(Component.class, new Component.Deserializer());
         module.addSerializer(Project.class, new Project.Serializer());
         module.addDeserializer(Project.class, new Project.Deserializer());
         mapper.registerModule(module);

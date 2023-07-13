@@ -9,7 +9,7 @@ import java.nio.ByteOrder;
 public class ScreenDataToBinary {
 
     public static byte[] convert(Screen screen, int backgroundNumber) {
-        ByteBuffer screenDataBuffer = ByteBuffer.allocate((int) Math.pow(2,14)).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer screenDataBuffer = ByteBuffer.allocate(2048).order(ByteOrder.LITTLE_ENDIAN);
 	    int width = screen.getWidth(backgroundNumber);
         int height = screen.getHeight(backgroundNumber);
         for (int y = 0; y < height; y++) {

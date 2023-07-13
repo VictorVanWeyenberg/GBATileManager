@@ -53,12 +53,7 @@ public class MainSceneController {
     @FXML
     void initialize() {
         File file = CachingManager.getInstance().getLatestOpenedProject();
-        if (file != null) {
-            Optional<Project> optionalProject = FileManager.getInstance().openProject(file);
-            setProject(optionalProject.get());
-        } else {
-            setProject(null);
-        }
+        FileManager.getInstance().openProject(file).ifPresent(this::setProject);
         tilesTab.selectedProperty().addListener((o, t0, t1) -> {
             if (t1) {
                 tilesController.selected();
@@ -67,6 +62,11 @@ public class MainSceneController {
         screensTab.selectedProperty().addListener((o, t0, t1) -> {
             if (t1) {
                 screensController.selected();
+            }
+        });
+        componentsTab.selectedProperty().addListener((o, t0, t1) -> {
+            if (t1) {
+                componentsController.selected();
             }
         });
         menuBarController.setNewProjectConsumer(this::setProject);
