@@ -1,6 +1,7 @@
 package dev.cnpuvache.gba.tile_manager.persistence;
 
 import java.io.*;
+import java.util.Optional;
 import java.util.Properties;
 
 public class CachingManager {
@@ -9,6 +10,7 @@ public class CachingManager {
     private static final File cachingDirectory = new File(homeDirectory, ".gba_tile_manager/");
     private static final File propertiesFile = new File(cachingDirectory, "gba_tile_manager.properties");
     private static final String LATEST_OPENED_PROJECT_KEY = "project.latest.opened";
+    private static final String LATEST_LOADED_CALLBACK_HEADER_FILE = "project.latest.callback.header";
 
     private final Properties properties;
 
@@ -69,4 +71,19 @@ public class CachingManager {
         }
     }
 
+    public Optional<File> getLatestLoadedCallbackHeaderFile() {
+        if (properties.containsKey(LATEST_LOADED_CALLBACK_HEADER_FILE)) {
+            Object latestLoadedCallbackHeaderFile = properties.get(LATEST_LOADED_CALLBACK_HEADER_FILE);
+            String latestLoadedCallbackHeaderFileName = String.valueOf(latestLoadedCallbackHeaderFile);
+            return Optional.of(new File(latestLoadedCallbackHeaderFileName));
+        }
+        return Optional.empty();
+    }
+
+    public void setLatestLoadedCallbackHeaderFile(File headerFile) {
+        if (headerFile.exists() && headerFile.canRead()) {
+            properties.setProperty(LATEST_LOADED_CALLBACK_HEADER_FILE, headerFile.getAbsolutePath());
+        }
+        save();
+    }
 }

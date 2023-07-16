@@ -45,6 +45,7 @@ public class FileManager {
             });
             return optionalProject;
         } catch (IOException e) {
+            e.printStackTrace();
             return Optional.empty();
         }
     }

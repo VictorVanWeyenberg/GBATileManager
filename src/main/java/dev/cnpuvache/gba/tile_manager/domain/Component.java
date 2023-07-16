@@ -1,9 +1,7 @@
 package dev.cnpuvache.gba.tile_manager.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -13,6 +11,8 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -23,6 +23,8 @@ public class Component {
     private final int beginY;
     private int endX;
     private int endY;
+    private int callbackIndex;
+    private List<Integer> args;
 
     private transient Component north;
     private transient Component east;
@@ -30,7 +32,7 @@ public class Component {
     private transient Component west;
 
     public Component(int beginX, int beginY, int endX, int endY) {
-        this(UUID.randomUUID(), beginX, beginY, endX, endY);
+        this(UUID.randomUUID(), beginX, beginY, endX, endY, 0, new ArrayList<>());
     }
 
     @JsonCreator
@@ -39,13 +41,17 @@ public class Component {
             @JsonProperty("beginX") int beginX,
             @JsonProperty("beginY") int beginY,
             @JsonProperty("endX") int endX,
-            @JsonProperty("endY") int endY
+            @JsonProperty("endY") int endY,
+            @JsonProperty("callback_index") int callbackIndex,
+            @JsonProperty("args") List<Integer> args
     ) {
         this.id = UUID.randomUUID();
         this.beginX = beginX;
         this.beginY = beginY;
         this.endX = endX;
         this.endY = endY;
+        this.callbackIndex = callbackIndex;
+        this.args = args;
     }
 
     public void setEndX(int endX) {
@@ -74,6 +80,22 @@ public class Component {
 
     public int getEndY() {
         return endY;
+    }
+
+    public int getCallbackIndex() {
+        return callbackIndex;
+    }
+
+    public void setCallbackIndex(int callbackIndex) {
+        this.callbackIndex = callbackIndex;
+    }
+
+    public List<Integer> getArgs() {
+        return args;
+    }
+
+    public void setArgs(List<Integer> args) {
+        this.args = args;
     }
 
     public void reset() {
@@ -141,13 +163,27 @@ public class Component {
 
         @Override
         public void serialize(Component component, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
-            jsonGenerator.writeStartObject();
-            jsonGenerator.writeStringField("id", component.id.toString());
-            jsonGenerator.writeNumberField("beginX", component.beginX);
-            jsonGenerator.writeNumberField("beginY", component.beginY);
-            jsonGenerator.writeNumberField("endX", component.endX);
-            jsonGenerator.writeNumberField("endY", component.endY);
-            jsonGenerator.writeEndObject();
+            try {
+                jsonGenerator.writeStartObject();
+                jsonGenerator.writeStringField("id", component.id.toString());
+                jsonGenerator.writeNumberField("beginX", component.beginX);
+                jsonGenerator.writeNumberField("beginY", component.beginY);
+                jsonGenerator.writeNumberField("endX", component.endX);
+                jsonGenerator.writeNumberField("endY", component.endY);
+                jsonGenerator.writeNumberField("callback_index", component.callbackIndex);
+                jsonGenerator.writeArrayFieldStart("args");
+                component.args.forEach(a -> {
+                    try {
+                        jsonGenerator.writeNumber(a);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                jsonGenerator.writeEndArray();
+                jsonGenerator.writeEndObject();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -165,7 +201,10 @@ public class Component {
             int beginY = node.get("beginY").asInt();
             int endX = node.get("endX").asInt();
             int endY = node.get("endY").asInt();
-            return new Component(id, beginX, beginY, endX, endY);
+            int callbackIndex = node.get("callback_index").asInt();
+            List<Integer> argsList = new ArrayList<>();
+            node.get("args").elements().forEachRemaining(a -> argsList.add(a.asInt()));
+            return new Component(id, beginX, beginY, endX, endY, callbackIndex, argsList);
         }
     }
 }

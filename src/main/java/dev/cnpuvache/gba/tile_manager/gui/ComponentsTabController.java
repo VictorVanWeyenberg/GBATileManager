@@ -2,6 +2,7 @@ package dev.cnpuvache.gba.tile_manager.gui;
 
 import dev.cnpuvache.gba.tile_manager.domain.*;
 import dev.cnpuvache.gba.tile_manager.gui.format.ScreenConverter;
+import dev.cnpuvache.gba.tile_manager.persistence.CachingManager;
 import dev.cnpuvache.gba.tile_manager.util.TileToImageConverter;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -9,17 +10,25 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ComponentsTabController {
 
@@ -32,9 +41,16 @@ public class ComponentsTabController {
     @FXML
     private ListView<Screen> screensListView;
 
+    @FXML
+    private ChoiceBox<String> callbacksChoiceBox;
+
+    @FXML
+    private TextField argsTextField;
+
     private Project project;
     private GraphicsContext ctx;
     private Component component;
+    private int selectedComponentIndex = -1;
 
     @FXML
     void initialize() {
@@ -52,6 +68,7 @@ public class ComponentsTabController {
         componentsCanvas.setOnMousePressed(this::mousePressed);
         componentsCanvas.setOnMouseDragged(this::mouseDragged);
         componentsCanvas.setOnMouseReleased(this::mouseReleased);
+        componentsCanvas.setOnMouseClicked(this::mouseClicked);
     }
 
     @FXML
@@ -66,6 +83,59 @@ public class ComponentsTabController {
         String screenName = screensListView.getSelectionModel().getSelectedItem().getName();
         project.resetComponents(screenName);
         draw();
+    }
+
+    @FXML
+    void loadCallbackHeaderOnAction(ActionEvent event) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Choose callback header file.");
+        File file = chooser.showOpenDialog(new Stage());
+        Optional.ofNullable(file).ifPresent(this::parseHeader);
+    }
+
+    private void parseHeader(File headerFile) {
+        try {
+            String headerContent = Files.readString(headerFile.toPath());
+            Matcher matcher = Pattern.compile("(?<=\\n|^)(?:\\w+\\s*\\**\\s+)+(\\w+)\\s*\\([^;]*;")
+                    .matcher(headerContent);
+            List<String> matches = new ArrayList<>();
+            while (matcher.find()) {
+                matches.add(matcher.group(1));
+            }
+            callbacksChoiceBox.setItems(FXCollections.observableList(matches));
+            if (!matches.isEmpty()) {
+                CachingManager.getInstance().setLatestLoadedCallbackHeaderFile(headerFile);
+            }
+        } catch (IOException e) {
+            System.out.println("Could not read header file. " + headerFile.getAbsolutePath());
+        }
+    }
+
+    @FXML
+    void setArgsButtonOnAction(ActionEvent event) {
+        if (selectedComponentIndex < 0) {
+            return;
+        }
+        Screen screen = screensListView.getSelectionModel().getSelectedItem();
+        if (screen == null) {
+            return;
+        }
+        String screenName = screen.getName();
+        List<Component> components = project.getComponents(screenName);
+        String callback = callbacksChoiceBox.getSelectionModel().getSelectedItem();
+        if (callback != null && !callback.isBlank()) {
+            components.get(selectedComponentIndex)
+                    .setCallbackIndex(callbacksChoiceBox.getSelectionModel().getSelectedIndex());
+        }
+        String argsText = argsTextField.getText();
+        if (argsText != null && !argsText.isBlank()) {
+            List<Integer> args = Arrays.stream(argsText.split(","))
+                    .map(String::trim)
+                    .map(Integer::parseInt)
+                    .collect(Collectors.toList());
+            components.get(selectedComponentIndex)
+                    .setArgs(args);
+        }
     }
 
     private void setError(String s) {
@@ -116,14 +186,15 @@ public class ComponentsTabController {
             return;
         }
         String screenName = selectedItem.getName();
-        for (Component component : project.getComponents(screenName)) {
+        List<Component> components = project.getComponents(screenName);
+        for (Component component : components) {
             double beginX = (double) component.getBeginX() / 240 * componentsCanvas.getWidth();
             double beginY = (double) component.getBeginY() / 160 * componentsCanvas.getHeight();
             double endX = (double) (component.getEndX() + 8) / 240 * componentsCanvas.getWidth();
             double endY = (double) (component.getEndY() + 8) / 160 * componentsCanvas.getHeight();
             double width = Math.abs(endX - beginX);
             double height = Math.abs(endY - beginY);
-            ctx.setStroke(Color.MAGENTA);
+            ctx.setStroke(components.indexOf(component) == selectedComponentIndex ? Color.LIME : Color.MAGENTA);
             ctx.strokeRect(beginX, beginY, width, height);
             if (component.getNorth() != null) {
                 Component north = component.getNorth();
@@ -169,7 +240,6 @@ public class ComponentsTabController {
     }
 
     private void drawRelation(double x1, double y1, double x2, double y2, Color color) {
-        System.out.printf("%f %f %f %f\n", x1, y1, x2, y2);
         ctx.setStroke(color);
         ctx.strokeLine(
                 x1 / 240 * componentsCanvas.getWidth(),
@@ -247,6 +317,9 @@ public class ComponentsTabController {
     }
 
     private void mousePressed(MouseEvent e) {
+        if (!e.isDragDetect()) {
+            return;
+        }
         Screen selectedItem = screensListView.getSelectionModel().getSelectedItem();
         if (selectedItem == null) {
             return;
@@ -283,7 +356,32 @@ public class ComponentsTabController {
         }
     }
 
+    private void mouseClicked(MouseEvent e) {
+        Screen selectedItem = screensListView.getSelectionModel().getSelectedItem();
+        if (selectedItem == null) {
+            return;
+        }
+        String screenName = selectedItem.getName();
+        List<Component> components = project.getComponents(screenName);
+        int mx = ((int) (e.getX() / componentsCanvas.getWidth() * 30)) * 8;
+        int my = ((int) (e.getY() / componentsCanvas.getWidth() * 30)) * 8;
+        for (int index = 0; index < components.size(); index++) {
+            Component component = components.get(index);
+            if (mx >= component.getBeginX() && mx <= component.getEndX() && my >= component.getBeginY() && my <= component.getEndY()) {
+                this.selectedComponentIndex = index;
+                break;
+            }
+        }
+        Component component = components.get(selectedComponentIndex);
+        callbacksChoiceBox.getSelectionModel().select(component.getCallbackIndex());
+        argsTextField.setText(component.getArgs().stream().map(String::valueOf).reduce((s1,s2)->s1+","+s2).orElse(""));
+        draw();
+    }
+
     public void selected() {
+        CachingManager.getInstance()
+                .getLatestLoadedCallbackHeaderFile()
+                .ifPresent(this::parseHeader);
         updateListView();
         draw();
     }
